@@ -147,6 +147,7 @@ end
 addToAppModals(nil, "x", "iTerm2")
 addToAppModals(nil, "s", "Safari")
 addToAppModals(nil, "f", "Firefox")
+addToAppModals(nil, "g", "Google Chrome")
 addToAppModals(nil, "t", "Sublime Text")
 
 --- Use modal mode for window selection/navigation
@@ -159,15 +160,21 @@ require('win-moving')
 local function bindExecuteShortcut(modifiers, key, cmd)
 	hs.hotkey.bind(modifiers, key, nil, function()
 		-- print("selectedText: "..tostring(hs.uielement.focusedElement():selectedText()))
-		output, status, typestr, rc = hs.execute(cmd)
+    local command = cmd
+    if (type(cmd) == "function") then
+      command = cmd()
+    end
+		status = os.execute(command)
+    print("Running: "..command)
 		if not status then
-			hs.alert.show("Error running "..cmd.."\n "..output)
+      print("Error running "..command)
+			hs.alert.show("Error running "..command)
 		end
 	end)
 end
 
 print("== Application key bindings:")
-bindExecuteShortcut(ctrlcmd, "z", "/Users/yoomlam/bin/open_mac.sh ")
+bindExecuteShortcut(ctrlcmd, "z", function() return "/Users/yoomlam/bin/open_mac.sh "..hs.pasteboard.readString() end)
 bindExecuteShortcut(ctrlcmd, "p", "open -a Screenshot")
 bindExecuteShortcut("alt-shift", "z", "pmset displaysleepnow")
 -- hs.hotkey.bind(ctrlcmd, "s", )
@@ -186,6 +193,7 @@ hs.hotkey.bind(hyper, "l", nil, layoutCurrentScreen)
 
 --- Next
 -- Quitter replacement
+-- Finicky replacement
 
 --- Ideas
 -- make text navigation/editing same across apps
