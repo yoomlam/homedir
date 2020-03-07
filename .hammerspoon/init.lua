@@ -110,19 +110,24 @@ bindExecuteShortcut(ctrlcmd, "m", "open -a 'Mission Control'")
 bindExecuteShortcut("alt-shift", "z", "pmset displaysleepnow")
 -- hs.hotkey.bind(ctrlcmd, "s", )
 
-function openMacCommand()
-  return "/Users/yoomlam/bin/open_mac.sh "..hs.pasteboard.readString()
+function openMacCommand(cmd)
+  if cmd==nil then
+    cmd=hs.pasteboard.readString()
+  end
+  return "/Users/yoomlam/bin/open_mac.sh "..cmd
 end
-
 bindExecuteShortcut(ctrlcmd, "z", openMacCommand)
 APPS_LAUNCH_MODAL:bind(nil, 'z', "Launch open_mac.sh", function()
   exitModal(APPS_LAUNCH_MODAL)
   executeCommand(openMacCommand())
 end)
-APPS_SELECT_MODAL:bind(nil, 'z', "Open with open_mac.sh", function()
-  exitModal(APPS_SELECT_MODAL)
-  executeCommand(openMacCommand())
-end)
+
+function executeChoice(choice)
+  if choice then
+    print(hs.inspect(choice));
+    executeCommand(openMacCommand(choice['text']))
+  end
+end
 
 
 --- Replacement for Clipy
@@ -135,6 +140,18 @@ txtClipboard.show_in_menubar=false
 txtClipboard:start()
 hs.hotkey.bind(ctrlcmd, "v", "Clipboard", function() txtClipboard:toggleClipboard() end)
 
+function getClipboardChoices()
+  clipboardChoices={}
+  for k,v in pairs(txtClipboard:clipboardContents()) do
+    if (type(v) == "string") then
+       table.insert(clipboardChoices, {text=v})
+    end
+  end
+  return clipboardChoices
+end
+APPS_SELECT_MODAL:bind(nil, 'z', "Open with open_mac.sh", function()
+  showChooser(getClipboardChoices(), executeChoice)
+end)
 
 
 --- Other stuff

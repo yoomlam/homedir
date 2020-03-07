@@ -111,6 +111,10 @@ local last_change = nil;
 -- Array to store the clipboard history
 local clipboard_history = nil
 
+function obj:clipboardContents()
+  return clipboard_history
+end
+
 -- Internal function - persist the current history so it survives across restarts
 function _persistHistory()
    setSetting("items",clipboard_history)
