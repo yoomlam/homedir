@@ -47,6 +47,8 @@ KEY_FOR_WIN_SELECT = "pad2"
 -- Reminder: System Preferences > Keyboard > Modifier Keys, and set the caps lock key to control.
 -- hs.loadSpoon('ControlEscape'):start()
 
+require('helpers')
+
 --- double tap a modifier key to send a keystroke, such as to enable a modal
 require('doubletap-flag'):start({
     {{"shift"}, {FLAGS_FOR_OTHER_MODES, KEY_FOR_KI_SELECT_MODE}},
@@ -58,18 +60,29 @@ require('doubletap-flag'):start({
 
 
 ---- Modals
-require('keyboard-modal')
+local kbModal=require('keyboard-modal')
+
+local apps=require('apps')
 
 --- Use modal mode for launching applications
-APPS_LAUNCH_MODAL = newModal(FLAGS_FOR_OTHER_MODES, KEY_FOR_KI_ENTITIES_MODE, "🍎 App Launch mode")
---- Use modal mode for selecting windows for application
-APPS_SELECT_MODAL = newModal(FLAGS_FOR_OTHER_MODES, KEY_FOR_KI_SELECT_MODE, "📚 App Select mode")
+local appChoices={}
+APPS_LAUNCH_MODAL = kbModal:newModal(FLAGS_FOR_OTHER_MODES, KEY_FOR_KI_ENTITIES_MODE, "🍎 App Launch mode",
+  nil, function()
+    exitModal(APPS_LAUNCH_MODAL)
+    showChooser(appChoices, function(choice) apps:newWindow(choice['subText']) end)
+  end)
 
-require('apps')
+--- Use modal mode for selecting windows for application
+APPS_SELECT_MODAL = kbModal:newModal(FLAGS_FOR_OTHER_MODES, KEY_FOR_KI_SELECT_MODE, "📚 App Select mode",
+  nil, function()
+    local win=hs.window.focusedWindow()
+    apps:showAppChooser(win:application():name())
+  end)
 
 function addToAppModals(flags, key, appName)
-  APPS_LAUNCH_MODAL:bind(flags, key, "Launch "..appName, function() newWindow(appName) end)
-  APPS_SELECT_MODAL:bind(flags, key, "Select "..appName, function() showAppChooser(appName) end)
+  table.insert( appChoices, {text=key, subText=appName} )
+  APPS_LAUNCH_MODAL:bind(flags, key, "Launch "..appName, function() apps:newWindow(appName) end)
+  APPS_SELECT_MODAL:bind(flags, key, "Select "..appName, function() apps:showAppChooser(appName) end)
 end
 
 addToAppModals(nil, "x", "iTerm2")
@@ -78,14 +91,20 @@ addToAppModals(nil, "f", "Firefox")
 addToAppModals(nil, "g", "Google Chrome")
 addToAppModals(nil, "t", "Sublime Text")
 
+--- Countdown progress bar
+local countdown=require('choose-countdown')
+APPS_SELECT_MODAL:bind(nil, 'c', "Select Countdown", countdown.showChooseCountdown)
+APPS_LAUNCH_MODAL:bind(nil, 'c', "Select Countdown", countdown.showChooseCountdown)
+
+
 --- Use modal mode for window selection/navigation
-WSELECT_MODAL = newModal(FLAGS_FOR_OTHER_MODES, KEY_FOR_WIN_SELECT, "🌬 Window Layout mode", "Exited mode")
+WSELECT_MODAL = kbModal:newModal(FLAGS_FOR_OTHER_MODES, KEY_FOR_WIN_SELECT, "🌬 Window Layout mode")
 require('win-selecting')
 require('win-moving')
 
 
---- Shortcuts to launch applications
-local function bindExecuteShortcut(modifiers, key, cmd)
+--- Shortcuts to launch applications via commandline
+local function bindExecuteCommand(modifiers, key, cmd)
 	hs.hotkey.bind(modifiers, key, nil, function()
 		-- print("selectedText: "..tostring(hs.uielement.focusedElement():selectedText()))
     local command = cmd
@@ -96,38 +115,20 @@ local function bindExecuteShortcut(modifiers, key, cmd)
 	end)
 end
 function executeCommand(command)
-  status = os.execute(command)
   print("Running: "..command)
+  status = os.execute(command)
   if not status then
     print("Error running "..command)
     hs.alert.show("Error running "..command)
   end
+  print("  returning from executeCommand function")
 end
 
 print("== Application key bindings:")
-bindExecuteShortcut(ctrlcmd, "p", "open -a Screenshot")
-bindExecuteShortcut(ctrlcmd, "m", "open -a 'Mission Control'")
-bindExecuteShortcut("alt-shift", "z", "pmset displaysleepnow")
+bindExecuteCommand(ctrlcmd, "p", "open -a Screenshot")
+bindExecuteCommand(ctrlcmd, "m", "open -a 'Mission Control'")
+bindExecuteCommand("alt-shift", "z", "pmset displaysleepnow")
 -- hs.hotkey.bind(ctrlcmd, "s", )
-
-function openMacCommand(cmd)
-  if cmd==nil then
-    cmd=hs.pasteboard.readString()
-  end
-  return "/Users/yoomlam/bin/open_mac.sh "..cmd
-end
-bindExecuteShortcut(ctrlcmd, "z", openMacCommand)
-APPS_LAUNCH_MODAL:bind(nil, 'z', "Launch open_mac.sh", function()
-  exitModal(APPS_LAUNCH_MODAL)
-  executeCommand(openMacCommand())
-end)
-
-function executeChoice(choice)
-  if choice then
-    print(hs.inspect(choice));
-    executeCommand(openMacCommand(choice['text']))
-  end
-end
 
 
 --- Replacement for Clipy
@@ -140,34 +141,16 @@ txtClipboard.show_in_menubar=false
 txtClipboard:start()
 hs.hotkey.bind(ctrlcmd, "v", "Clipboard", function() txtClipboard:toggleClipboard() end)
 
-function getClipboardChoices()
-  clipboardChoices={}
-  for k,v in pairs(txtClipboard:clipboardContents()) do
-    if (type(v) == "string") then
-       table.insert(clipboardChoices, {text=v})
-    end
-  end
-  return clipboardChoices
-end
-APPS_SELECT_MODAL:bind(nil, 'z', "Open with open_mac.sh", function()
-  showChooser(getClipboardChoices(), executeChoice)
-end)
-
+local openMac=require('open-mac')
+openMac:start(bindExecuteCommand, txtClipboard)
 
 --- Other stuff
 require('audiodevice')
 require('win-switcher')
 require('win-expose')
-
 require('menubar')
 
-require('choose-countdown')
-APPS_SELECT_MODAL:bind(nil, 'c', "Select Countdown", showChooseCountdown)
-
-
--- hotkey to layout current screen; see menubar.lua
-hs.hotkey.bind(hyper, "l", nil, layoutCurrentScreen)
-
+-- Cheatsheet for application key bindings
 cheatsheet=hs.loadSpoon("KSheet")
 hs.hotkey.bind(hyper, "/", "Cheatsheet", function() cheatsheet:toggle() end)
 
@@ -177,14 +160,14 @@ hs.hotkey.bind('ctrl', 'left', nil,
 hs.hotkey.bind('ctrl', 'right', nil,
   function() hs.eventtap.keyStroke('alt', 'right') end)
 
-
-require('url-handler')
+--- Replacement for Finicky
+local urlHandler=require('url-handler')
+urlHandler:start()
 
 
 --- Next
 -- When is `local` needed?
 -- Quitter replacement
--- Finicky replacement
 -- https://github.com/koekeishiya/yabai
 
 --- Ideas
@@ -197,3 +180,4 @@ require('url-handler')
 
 
 hs.alert.show("Config loaded: " .. hs.configdir)
+collectgarbage("collect")

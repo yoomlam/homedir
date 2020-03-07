@@ -1,13 +1,14 @@
+local obj={}
 
-function newWindow(appName)
-  hs.alert.show("Launching new "..appName, "until exitModal")
+function obj:newWindow(appName)
+  hs.alert.show("Launching new "..appName)
   app=hs.application.find(appName)
   app:selectMenuItem("New Window")
   exitModal(APPS_LAUNCH_MODAL)
   app:activate()
 end
 
-function buildChoices(appName)
+local function buildChoices(appName)
   local wins=hs.window.filter.new{appName}:getWindows()
   -- print(hs.inspect(wins))
   local choices = {}
@@ -25,7 +26,7 @@ function buildChoices(appName)
   return choices
 end
 
-function raiseWindow(choice)
+local function raiseWindow(choice)
   if choice then
     print(hs.inspect(choice))
     local win=hs.window.get(choice['winId'])
@@ -35,47 +36,25 @@ function raiseWindow(choice)
     else
       local found=selectWindowViaMenu(choice)
       if not found then
+        -- FIXME: doesn't work for iTerm2
         hs.alert.show("Cannot find "..tostring(choice['winId']), 4)
       end
     end
   end
 end
 
-function selectWindowViaMenu(choice)
+local function selectWindowViaMenu(choice)
   local app=hs.application.find(choice['appName'])
   app:activate()
   return app:selectMenuItem({"Window", choice['title']})
 end
 
-function showAppChooser(appName)
+function obj:showAppChooser(appName)
   exitModal(APPS_SELECT_MODAL)
   local chooser=hs.chooser.new(function(choice) raiseWindow(choice) end)
   chooser:choices(buildChoices(appName))
   chooser:show()
 end
 
-function showChooser(choices, onChoice)
-  exitModal(APPS_SELECT_MODAL)
 
-  local onChoiceFunc
-  if onChoice==nil then
-    onChoiceFunc=function(choice) raiseWindow(choice) end
-  else
-    onChoiceFunc=onChoice
-  end
-  local chooser=hs.chooser.new(onChoiceFunc)
-
-  local chooserChoices=choices
-  if type(choices)=="function" then
-    chooserChoices=choices()
-  end
-  chooser:choices(choices)
-  chooser:show()
-end
-
--- list other windows of the currently focused application
-APPS_SELECT_MODAL:bind(nil, "tab", "Select from windows of focused application",
-  function()
-    local win=hs.window.focusedWindow()
-    showAppChooser(win:application():name())
-  end)
+return obj

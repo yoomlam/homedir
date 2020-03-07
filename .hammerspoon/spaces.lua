@@ -21,7 +21,9 @@ end
 --    end
 -- end
 
-function moveWindowOneSpace(dir,switch)
+local obj={}
+
+function obj:moveWindowOneSpace(dir,switch)
    local win = getGoodFocusedWindow(true)
    if not win then return end
    local screen=win:screen()
@@ -56,7 +58,7 @@ end
 -- hs.hotkey.bind(hypershift, "7", nil, function() moveWindowOneSpace("left", true) end)
 -- hs.hotkey.bind(hypershift, "8", nil, function() moveWindowOneSpace("right", true) end)
 
-function moveToSpace(dir,switch)
+function obj:moveToSpace(dir,switch)
    local win = getGoodFocusedWindow(true)
    if not win then return end
    local screen=win:screen()
@@ -88,3 +90,4 @@ function moveToSpace(dir,switch)
    errorScreen(screen)   -- Shouldn't get here, so no space found
 end
 
+return obj

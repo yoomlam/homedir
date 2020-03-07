@@ -8,14 +8,14 @@ obj.__index = obj
 -- Metadata
 obj.name = 'Doubletap'
 
-function tableLength(tab)
+local function tableLength(tab)
   local count = 0
   for _ in pairs(tab) do count = count + 1 end
   return count
 end
 
 obj.FLAGS = { "cmd", "alt", "shift", "ctrl", "fn" }
-function flagTabToString(tab)
+local function flagTabToString(tab)
   local r=""
   hs.fnutils.each(obj.FLAGS, function(key)
     local ch

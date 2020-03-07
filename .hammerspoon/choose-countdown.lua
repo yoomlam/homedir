@@ -14,7 +14,7 @@ countdownChoices = {
   { text="60 minutes (approx)", value=55 },
 }
 
-function startCountdown(choice)
+local function startCountdown(choice)
   if choice then
     -- print(hs.inspect(choice));
     countDown:stop()
@@ -22,7 +22,13 @@ function startCountdown(choice)
   end
 end
 
-function showChooseCountdown()
+---
+
+obj={}
+
+function obj:showChooseCountdown()
+  exitModal(APPS_SELECT_MODAL)
   showChooser(countdownChoices, startCountdown)
 end
 
+return obj

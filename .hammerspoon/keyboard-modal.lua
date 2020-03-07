@@ -1,13 +1,14 @@
+obj={}
 
-hotkeyHelpRect = hs.geometry.rect(250, 250, 300, 400)
-function showHotkeysHelp()
+obj.hotkeyHelpRect = hs.geometry.rect(250, 250, 300, 400)
+local function showHotkeysHelp()
   local hotkeyMsgTab=hs.fnutils.map(hs.hotkey.getHotkeys(), function(elem) return elem.msg end)
   local hotkeyMsg=""
   for i,msg in ipairs(hotkeyMsgTab) do
     hotkeyMsg = hotkeyMsg.."<li>"..msg.."</li>"
   end
   -- hs.dialog.alert(20, 20, nil, "Hotkeys", hotkeyMsg, "Single Button")
-  local b=hs.webview.newBrowser(hotkeyHelpRect)
+  local b=hs.webview.newBrowser(obj.hotkeyHelpRect)
   b:html("<h3>Hotkeys</h3><ul>"..hotkeyMsg.."</ul>")
   b:closeOnEscape(true)
   b:deleteOnClose(true)
@@ -20,16 +21,17 @@ end
 hs.hotkey.bind(ctrlcmdshift, "/", "Hotkeys help", showHotkeysHelp)
 
 -- show help when entering modal
-showModalHelpUponEntry = false
+obj.showModalHelpUponEntry = false
 
-function enteredModal(modal)
-  if showModalHelpUponEntry then
+local function enteredModal(modal)
+  if obj.showModalHelpUponEntry then
     modalHelpWindow=showHotkeysHelp()
   else
     hs.alert.show('Press Ctrl-Cmd-Shift-/ to see hotkeys', 4)
   end
 end
 
+-- define as global function to allow exiting from modal anywhere
 function exitModal(modal, exitMsg)
   if modalHelpWindow then
     modalHelpWindow:delete(true, 1)
@@ -45,7 +47,8 @@ function exitModal(modal, exitMsg)
   modal:exit()
 end
 
-function newModal(flags, key, enterMsg, exitMsg, enterMsgDuration)
+
+function obj:newModal(flags, key, enterMsg, enterMsgDuration, showChooserFunc)
   if not enterMsgDuration then
     enterMsgDuration="until exit"
   end
@@ -54,6 +57,10 @@ function newModal(flags, key, enterMsg, exitMsg, enterMsgDuration)
   function modal:entered()
     modalMsgUuid=hs.alert.show(enterMsg, enterMsgDuration)
     enteredModal(self)
+  end
+
+  if showChooserFunc then
+    modal:bind(nil, 'tab', nil, showChooserFunc)
   end
 
   -- TODO: add timeout to exit modal
@@ -68,3 +75,5 @@ function newModal(flags, key, enterMsg, exitMsg, enterMsgDuration)
     function() exitModal(modal) end)
   return modal
 end
+
+return obj

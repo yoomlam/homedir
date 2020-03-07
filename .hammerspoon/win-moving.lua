@@ -1,5 +1,5 @@
 hs.window.animationDuration = 0
-ww = hs.loadSpoon("WinWin")
+local ww = hs.loadSpoon("WinWin")
 ww.gridparts = 20
 
 --==== Moving windows uses 'shift'
@@ -18,25 +18,25 @@ WSELECT_MODAL:bind("shift", "]", function() ww:moveToScreen("right") end)
 
 
 --==== Moving across spaces uses 'ctrl'
-require('spaces')
+local spaces=require('spaces')
 ---=== Modal versions
 --- Move window to other space
-WSELECT_MODAL:bind("ctrl-shift", "u",     "Moved left",  nil, function() moveWindowOneSpace("left", true) end)
-WSELECT_MODAL:bind("ctrl-shift", "o",     "Moved right", nil, function() moveWindowOneSpace("right", true) end)
-WSELECT_MODAL:bind("ctrl-shift", "left",  "Moved left",  nil, function() moveWindowOneSpace("left", true) end)
-WSELECT_MODAL:bind("ctrl-shift", "right", "Moved right", nil, function() moveWindowOneSpace("right", true) end)
+WSELECT_MODAL:bind("ctrl-shift", "u",     "Moved left",  nil, function() spaces:moveWindowOneSpace("left", true) end)
+WSELECT_MODAL:bind("ctrl-shift", "o",     "Moved right", nil, function() spaces:moveWindowOneSpace("right", true) end)
+WSELECT_MODAL:bind("ctrl-shift", "left",  "Moved left",  nil, function() spaces:moveWindowOneSpace("left", true) end)
+WSELECT_MODAL:bind("ctrl-shift", "right", "Moved right", nil, function() spaces:moveWindowOneSpace("right", true) end)
 
 ---=== Non-modal versions (for navigation speed)
 --- Move window to other space; BetterTouchTool does this better because window doesn't disapper
-hs.hotkey.bind(ctrlcmdshift, "u",     "Moved left",  nil, function() moveWindowOneSpace("left", true) end)
-hs.hotkey.bind(ctrlcmdshift, "o",     "Moved right", nil, function() moveWindowOneSpace("right", true) end)
-hs.hotkey.bind(ctrlcmdshift, "left",  "Moved left",  nil, function() moveWindowOneSpace("left", true) end)
-hs.hotkey.bind(ctrlcmdshift, "right", "Moved right", nil, function() moveWindowOneSpace("right", true) end)
+hs.hotkey.bind(ctrlcmdshift, "u",     "Moved left",  nil, function() spaces:moveWindowOneSpace("left", true) end)
+hs.hotkey.bind(ctrlcmdshift, "o",     "Moved right", nil, function() spaces:moveWindowOneSpace("right", true) end)
+hs.hotkey.bind(ctrlcmdshift, "left",  "Moved left",  nil, function() spaces:moveWindowOneSpace("left", true) end)
+hs.hotkey.bind(ctrlcmdshift, "right", "Moved right", nil, function() spaces:moveWindowOneSpace("right", true) end)
 
 
 -- https://github.com/scottwhudson/Lunette/
-lunette_cmd = dofile("Spoons/Lunette.spoon/command.lua")
-function lunetteExec(commandName)
+local lunette_cmd = dofile("Spoons/Lunette.spoon/command.lua")
+local function lunetteExec(commandName)
   local window = hs.window.focusedWindow()
   local newFrame
 
@@ -76,12 +76,12 @@ WSELECT_MODAL:bind("shift", "return", function() lunetteExec("fullScreen") end)
 
 
 --- toggle (simulated) window shading
-shadeHeightTab = {
+local shadeHeightTab = {
   ["Sublime Text"] = 100,
   ["Google Chrome"] = 10,
   ["Safari"] = 10
 }
-frameDimsTab = {}
+local frameDimsTab = {}
 local function toggleShade()
   local win = hs.window.focusedWindow()
   local f = win:frame()

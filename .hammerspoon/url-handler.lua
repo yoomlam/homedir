@@ -46,10 +46,18 @@ myUrlMapping:addUrlPatterns("com.google.Chrome", {
 myUrlMapping:addUrlPatterns("us.zoom.xos", { "zoom.us" })
 
 -- For testing
-function openFunc(arg)
+local function openFunc(arg)
   print("openFunc: "..hs.inspect(arg))
 end
 myUrlMapping:addFuncForUrlPatterns(openFunc, { "hello" })
 
-urlDispatcher.url_patterns = myUrlMapping
-urlDispatcher:start()
+---
+
+local obj = {}
+
+function obj:start()
+  urlDispatcher.url_patterns = myUrlMapping
+  urlDispatcher:start()
+end
+
+return obj

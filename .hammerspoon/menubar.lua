@@ -1,27 +1,28 @@
 -- http://www.hammerspoon.org/docs/hs.menubar.html
 
 --- Keep monitors on
-mymenu = hs.menubar.new()
-function setCaffeineDisplay(state)
+local awakeMenu = hs.menubar.new()
+
+local function setCaffeineDisplay(state)
     if state then
-        mymenu:setTitle("A")
+        awakeMenu:setTitle("A")
     else
-        mymenu:setTitle("S")
+        awakeMenu:setTitle("S")
     end
 end
 
-function caffeineClicked()
+local function caffeineClicked()
     setCaffeineDisplay(hs.caffeinate.toggle("displayIdle"))
 end
 
-if mymenu then
-    mymenu:setClickCallback(caffeineClicked)
+if awakeMenu then
+    awakeMenu:setClickCallback(caffeineClicked)
     setCaffeineDisplay(hs.caffeinate.get("displayIdle"))
 end
 
 ---
 
-function getScreenWindows()
+local function getScreenWindows()
 	local windowsOnScreenByName = {}
   hs.fnutils.each(CURR_SCREEN_WINFILTER:getWindows(), function(win)
     if win:application() and win:application():name() then
@@ -34,11 +35,11 @@ function getScreenWindows()
   return hs.screen.mainScreen(), windowsOnScreenByName
 end
 
-function getWindowTitle(winByName, appName)
+local function getWindowTitle(winByName, appName)
   if not winByName[appName] then return nil else return winByName[appName]:title() end
 end
 
-function notesSlackMailLayout()
+local function notesSlackMailLayout()
   local focusedScreen, winByName = getScreenWindows()
   hs.layout.apply({
     {nil, getWindowTitle(winByName, "Google Chrome"), focusedScreen, {x=0, y=0, w=0.8, h=1}, nil, nil},
@@ -47,7 +48,7 @@ function notesSlackMailLayout()
   })
 end
 
-function forkFirefoxSafariLayout()
+local function forkFirefoxSafariLayout()
   local focusedScreen, winByName = getScreenWindows()
   hs.layout.apply({
     {"Fork", nil, SCREEN1, {x=0, y=0, w=0.9, h=0.8}, nil, nil},
@@ -58,7 +59,7 @@ function forkFirefoxSafariLayout()
 end
 
 -- TODO: How to layout multiple windows from same app, e.g., iTerm: make run, cf term, bet
-function rubymineTermsLayout()
+local function rubymineTermsLayout()
   local focusedScreen, winByName = getScreenWindows()
   hs.layout.apply({
     {nil, getWindowTitle(winByName, "RubyMine"), focusedScreen, {x=0, y=0, w=1, h=0.7}, nil, nil},
@@ -68,7 +69,7 @@ end
 
 -- TODO: Pairing: Slack chat, cf terms, RubyMine, Chrome Caseflow
 
-function readingSublimeFirefoxSafariLayout()
+local function readingSublimeFirefoxSafariLayout()
   local focusedScreen, winByName = getScreenWindows()
   hs.layout.apply({
     {nil, getWindowTitle(winByName, "Safari"), focusedScreen, {x=0, y=0.1, w=0.5, h=0.8}, nil, nil},
@@ -78,7 +79,7 @@ function readingSublimeFirefoxSafariLayout()
   })
 end
 
-function zoomHuddleLayout()
+local function zoomHuddleLayout()
   local focusedScreen, winByName = getScreenWindows()
   hs.layout.apply({
     {"zoom.us", "Zoom", SCREEN2, {x=0, y=0, w=0.6, h=0.6}, nil, nil}, -- main presentation
@@ -88,38 +89,42 @@ function zoomHuddleLayout()
   })
 end
 
-function tileWindows()
+local function tileWindows()
     local wins = hs.window.filter.new():setCurrentSpace(true):getWindows()
     local screen = hs.screen.mainScreen():currentMode()
     local rect = hs.geometry(0, 0, screen['w'], screen['h'])
     hs.window.tiling.tileWindows(wins, rect)
 end
 
-layoutTab = {
+local layoutMapping = {
   Slack = notesSlackMailLayout,
   Safari = readingSublimeFirefoxSafariLayout,
   ["zoom.us"] = zoomHuddleLayout
 }
-function layoutCurrentScreen()
+
+local function layoutCurrentScreen()
   local windows=CURR_SCREEN_WINFILTER:getWindows()
   local foundWin=hs.fnutils.find(windows, function(win)
-    return win:application() and layoutTab[win:application():name()] ~= nil
+    return win:application() and layoutMapping[win:application():name()] ~= nil
   end)
   local appName=foundWin:application():name()
   if foundWin then
     hs.alert.show("Arranging windows for "..appName)
-    layoutTab[appName]()
+    layoutMapping[appName]()
   else
     print("Cannot determine desired layout: "..hs.inspect(windows))
   end
 end
+hs.hotkey.bind(hyper, "l", nil, layoutCurrentScreen)
 
-
-winmenu = hs.menubar.new()
-winmenu:setTitle("Layout")
-winmenu:setMenu({
-	{ title = "my menu item", fn = function() hs.alert.show("You clicked my menu item!") end },
-	{ title = "-" },
+-- Do not make layoutMenu `local` to avoid garbage collection
+layoutMenu = hs.menubar.new()
+layoutMenu:setTitle("Layout")
+layoutMenu:setMenu({
+  { title = "Layout" },
+  { indent = 1, title = "Based on current screen", fn = layoutCurrentScreen },
+  { indent = 1, title = "Tile windows", fn = tileWindows },
+  { title = "-" },
 	{ title = "Laptop screen layout" },
 	{ indent = 1, title = "Mail, Notes, Slack", fn = notesSlackMailLayout },
 	{ indent = 1, title = "Fork, Firefox, Safari", fn = forkFirefoxSafariLayout },
@@ -128,10 +133,7 @@ winmenu:setMenu({
 	{ indent = 1, title = "Zoom Huddle", fn = zoomHuddleLayout },
 	{ indent = 1, title = "Reading: Sublime, browsers, iTerm", fn = readingSublimeFirefoxSafariLayout },
 	{ title = "-" },
-	{ title = "Layout" },
-	{ indent = 1, title = "Tile windows", fn = tileWindows },
-  { indent = 1, title = "Based on current screen", fn = layoutCurrentScreen },
-	{ title = "examples", menu = {
+	{ title = "Other examples", menu = {
 		{ title = "disabled item", disabled = true },
 		{ title = "checked item", checked = true },
 	}}
