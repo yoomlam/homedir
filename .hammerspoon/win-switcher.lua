@@ -1,25 +1,26 @@
 -- http://www.hammerspoon.org/docs/hs.window.switcher.html
-hs.window.switcher.ui.showThumbnails = false
-hs.window.switcher.ui.textSize = 10
-hs.window.switcher.ui.showSelectedThumbnail = true
-hs.window.switcher.ui.fontName = ".AppleSystemUIFont"
+local switcher=hs.window.switcher
+switcher.ui.showThumbnails = false
+switcher.ui.textSize = 10
+switcher.ui.showSelectedThumbnail = true
+switcher.ui.fontName = ".AppleSystemUIFont"
 
 -- all spaces
-switcher_all = hs.window.switcher.new(hs.window.filter.new():setCurrentSpace(nil), {
+switcher_all = switcher.new(hs.window.filter.new():setCurrentSpace(nil), {
 	showSelectedThumbnail = true,
 })
 hs.hotkey.bind(ctrlcmd,      'tab',function()switcher_all:next()end)
 hs.hotkey.bind(ctrlcmdshift, 'tab',function()switcher_all:previous()end)
 
 -- Current space only
-switcher_space = hs.window.switcher.new(CURR_SPACE_WINFILTER, {
+switcher_space = switcher.new(CURR_SPACE_WINFILTER, {
 	showSelectedThumbnail = true,
 })
 hs.hotkey.bind('option','tab',function()switcher_space:next()end)
 hs.hotkey.bind('option-shift','tab',function()switcher_space:previous()end)
 
 -- specialized switcher for your dozens of browser windows :)
-switcher_browsers = hs.window.switcher.new({'Safari','Google Chrome','Firefox'}, {
+switcher_browsers = switcher.new({'Safari','Google Chrome','Firefox'}, {
 	showSelectedThumbnail = true,
 	selectedThumbnailSize = 400
 })

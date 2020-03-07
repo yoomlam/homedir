@@ -5,20 +5,68 @@ ww.gridparts = 20
 --==== Moving windows uses 'shift'
 
 ---=== Modal versions
+WSELECT_MODAL:bind("ctrl", "z", ww.undo)
+
+-- hs.grid.setMargins('5,5')
+hs.grid.setGrid('20x20')
+local function snapWindows()
+  for i,win in ipairs(hs.window.visibleWindows()) do
+      hs.grid.snap(win)
+  end
+  -- cascadeOverlappingWindows()
+end
+WSELECT_MODAL:bind("shift", "s", "Snap windows", snapWindows)
+-- WSELECT_MODAL:bind("shift", "f", hs.grid.show)
+
 --- Window nudging
-WSELECT_MODAL:bind("shift", "left",  function() ww:stepMove("left") end)
-WSELECT_MODAL:bind("shift", "right", function() ww:stepMove("right") end)
-WSELECT_MODAL:bind("shift", "up",    function() ww:stepMove("up") end)
-WSELECT_MODAL:bind("shift", "down",  function() ww:stepMove("down") end)
+local function nudgeLeft()  ww:stepMove("left")  end
+local function nudgeRight() ww:stepMove("right") end
+local function nudgeUp()    ww:stepMove("up")    end
+local function nudgeDown()  ww:stepMove("down")  end
+WSELECT_MODAL:bind("shift", "left",  nil, nudgeLeft, nudgeLeft, nudgeLeft)
+WSELECT_MODAL:bind("shift", "right", nil, nudgeRight, nudgeRight, nudgeRight)
+WSELECT_MODAL:bind("shift", "up",    nil, nudgeUp, nudgeUp, nudgeUp)
+WSELECT_MODAL:bind("shift", "down",  nil, nudgeDown, nudgeDown, nudgeDown)
 
 ---=== Non-modal versions (for navigation speed)
 --- Move window to other screen
-WSELECT_MODAL:bind("shift", "[", function() ww:moveToScreen("left") end)
-WSELECT_MODAL:bind("shift", "]", function() ww:moveToScreen("right") end)
+WSELECT_MODAL:bind("shift", "[", nil, function() ww:moveToScreen("left") end)
+WSELECT_MODAL:bind("shift", "]", nil, function() ww:moveToScreen("right") end)
+
+-- local function resize(deltaX, deltaY)
+--   local window = hs.window.focusedWindow()
+--   local frame = window:frame()
+--   frame.w = frame.w + deltaX
+--   frame.h = frame.h + deltaY
+--   window:setFrame(frame)
+-- end
+
+-- local xIncr=20
+-- local yIncr=20
+-- local function resizeLeft()  resize(-xIncr,0) end
+-- local function resizeRight() resize(xIncr,0) end
+-- local function resizeUp()    resize(0,-yIncr) end
+-- local function resizeDown()  resize(0,yIncr) end
+
+local function resizeLeft()  ww:stepResize("left" ) end
+local function resizeRight() ww:stepResize("right") end
+local function resizeUp()    ww:stepResize("up"   ) end
+local function resizeDown()  ww:stepResize("down" ) end
+
+WSELECT_MODAL:bind("cmd-shift", "j", nil, resizeLeft, resizeLeft, resizeLeft)
+WSELECT_MODAL:bind("cmd-shift", "l", nil, resizeRight, resizeRight, resizeRight)
+WSELECT_MODAL:bind("cmd-shift", "i", nil, resizeUp, resizeUp, resizeUp)
+WSELECT_MODAL:bind("cmd-shift", "k", nil, resizeDown, resizeDown, resizeDown)
+
+WSELECT_MODAL:bind("cmd-shift", "left",  nil, resizeLeft, resizeLeft, resizeLeft)
+WSELECT_MODAL:bind("cmd-shift", "right", nil, resizeRight, resizeRight, resizeRight)
+WSELECT_MODAL:bind("cmd-shift", "up",    nil, resizeUp, resizeUp, resizeUp)
+WSELECT_MODAL:bind("cmd-shift", "down",  nil, resizeDown, resizeDown, resizeDown)
 
 
 --==== Moving across spaces uses 'ctrl'
 local spaces=require('spaces')
+
 ---=== Modal versions
 --- Move window to other space
 WSELECT_MODAL:bind("ctrl-shift", "u",     "Moved left",  nil, function() spaces:moveWindowOneSpace("left", true) end)

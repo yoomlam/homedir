@@ -166,7 +166,7 @@ urlHandler:start()
 
 
 --- Next
--- When is `local` needed?
+-- play with win-expose
 -- Quitter replacement
 -- https://github.com/koekeishiya/yabai
 
