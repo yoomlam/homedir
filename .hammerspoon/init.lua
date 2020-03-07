@@ -17,7 +17,9 @@ spoon.ReloadConfiguration:bindHotkeys({ reloadConfiguration = {ctrlcmdshift, "r"
 --- My monitors
 print(hs.inspect(hs.screen.allScreens()))
 SCREEN1 = hs.screen.allScreens()[1]:name()
-SCREEN2 = hs.screen.allScreens()[2]:name()
+if hs.screen.allScreens()[2] then
+  SCREEN2 = hs.screen.allScreens()[2]:name()
+end
 
 --- Window filters
 CURR_SPACE_WINFILTER = hs.window.filter.new():setCurrentSpace(true)
@@ -55,93 +57,19 @@ require('doubletap-flag'):start({
 })
 
 
---- Replacement for Clipy
--- http://www.hammerspoon.org/Spoons/TextClipboardHistory.html
-txtClipboard=hs.loadSpoon("TextClipboardHistory")
-txtClipboard.deduplicate=true
-txtClipboard.paste_on_select=true
-txtClipboard.show_in_menubar=false
--- instance methods
-txtClipboard:start()
-hs.hotkey.bind(ctrlcmd, "v", "Clipboard", function() txtClipboard:toggleClipboard() end)
-
-
---- Helper methods
-
-hotkeyHelpRect = hs.geometry.rect(250, 250, 300, 400)
-function showHotkeysHelp()
-  local hotkeyMsgTab=hs.fnutils.map(hs.hotkey.getHotkeys(), function(elem) return elem.msg end)
-  local hotkeyMsg=""
-  for i,msg in ipairs(hotkeyMsgTab) do
-    hotkeyMsg = hotkeyMsg.."<li>"..msg.."</li>"
-  end
-  -- hs.dialog.alert(20, 20, nil, "Hotkeys", hotkeyMsg, "Single Button")
-  local b=hs.webview.newBrowser(hotkeyHelpRect)
-  b:html("<h3>Hotkeys</h3><ul>"..hotkeyMsg.."</ul>")
-  b:closeOnEscape(true)
-  b:deleteOnClose(true)
-  b:show()
-  return b
-end
-hs.hotkey.bind(ctrlcmdshift, "/", "Hotkeys help", showHotkeysHelp)
-
 ---- Modals
--- show help when entering modal
-showModalHelpUponEntry = false
-function enteredModal(modal)
-  if showModalHelpUponEntry then
-    modalHelpWindow=showHotkeysHelp()
-  else
-    hs.alert.show('Press Ctrl-Cmd-Shift-/ to see hotkeys', 4)
-  end
-end
-
-function exitModal(modal, exitMsg)
-  if modalHelpWindow then
-    modalHelpWindow:delete(true, 1)
-    modalHelpWindow=nil
-  end
-  if modalMsgUuid then
-    hs.alert.closeAll()
-    modalMsgUuid=nil
-  end
-  if exitMsg then
-    hs.alert.show(exitMsg, 2)
-  end
-  modal:exit()
-end
-
-function newModal(flags, key, enterMsg, exitMsg, enterMsgDuration)
-  if not enterMsgDuration then
-    enterMsgDuration="until exit"
-  end
-
-  local modal=hs.hotkey.modal.new(flags, key)
-  function modal:entered()
-    modalMsgUuid=hs.alert.show(enterMsg, enterMsgDuration)
-    enteredModal(self)
-  end
-
-  -- TODO: add timeout to exit modal
-  -- several ways to exit modal
-  modal:bind(nil, 'escape', 'Exit modal',
-    function() exitModal(modal) end)
-  modal:bind(nil, 'return', 'Exit modal',
-    function() exitModal(modal) end)
-  modal:bind(flags, key, 'Exit modal',
-    function() exitModal(modal) end)
-  return modal
-end
+require('keyboard-modal')
 
 --- Use modal mode for launching applications
 APPS_LAUNCH_MODAL = newModal(FLAGS_FOR_OTHER_MODES, KEY_FOR_KI_ENTITIES_MODE, "🍎 App Launch mode")
 --- Use modal mode for selecting windows for application
-APPS_SELECT_MODAL = newModal(FLAGS_FOR_OTHER_MODES, KEY_FOR_KI_SELECT_MODE, "🚂 App Select mode")
+APPS_SELECT_MODAL = newModal(FLAGS_FOR_OTHER_MODES, KEY_FOR_KI_SELECT_MODE, "📚 App Select mode")
+
 require('apps')
 
 function addToAppModals(flags, key, appName)
   APPS_LAUNCH_MODAL:bind(flags, key, "Launch "..appName, function() newWindow(appName) end)
-  APPS_SELECT_MODAL:bind(flags, key, "Select "..appName, function() showChooser(appName) end)
+  APPS_SELECT_MODAL:bind(flags, key, "Select "..appName, function() showAppChooser(appName) end)
 end
 
 addToAppModals(nil, "x", "iTerm2")
@@ -164,20 +92,50 @@ local function bindExecuteShortcut(modifiers, key, cmd)
     if (type(cmd) == "function") then
       command = cmd()
     end
-		status = os.execute(command)
-    print("Running: "..command)
-		if not status then
-      print("Error running "..command)
-			hs.alert.show("Error running "..command)
-		end
+    executeCommand(command)
 	end)
+end
+function executeCommand(command)
+  status = os.execute(command)
+  print("Running: "..command)
+  if not status then
+    print("Error running "..command)
+    hs.alert.show("Error running "..command)
+  end
 end
 
 print("== Application key bindings:")
-bindExecuteShortcut(ctrlcmd, "z", function() return "/Users/yoomlam/bin/open_mac.sh "..hs.pasteboard.readString() end)
 bindExecuteShortcut(ctrlcmd, "p", "open -a Screenshot")
+bindExecuteShortcut(ctrlcmd, "m", "open -a 'Mission Control'")
 bindExecuteShortcut("alt-shift", "z", "pmset displaysleepnow")
 -- hs.hotkey.bind(ctrlcmd, "s", )
+
+function openMacCommand()
+  return "/Users/yoomlam/bin/open_mac.sh "..hs.pasteboard.readString()
+end
+
+bindExecuteShortcut(ctrlcmd, "z", openMacCommand)
+APPS_LAUNCH_MODAL:bind(nil, 'z', "Launch open_mac.sh", function()
+  exitModal(APPS_LAUNCH_MODAL)
+  executeCommand(openMacCommand())
+end)
+APPS_SELECT_MODAL:bind(nil, 'z', "Open with open_mac.sh", function()
+  exitModal(APPS_SELECT_MODAL)
+  executeCommand(openMacCommand())
+end)
+
+
+--- Replacement for Clipy
+-- https://www.hammerspoon.org/Spoons/ClipboardTool.html
+txtClipboard=hs.loadSpoon("ClipboardTool")
+txtClipboard.deduplicate=true
+txtClipboard.paste_on_select=true
+txtClipboard.show_in_menubar=false
+-- instance methods
+txtClipboard:start()
+hs.hotkey.bind(ctrlcmd, "v", "Clipboard", function() txtClipboard:toggleClipboard() end)
+
+
 
 --- Other stuff
 require('audiodevice')
@@ -185,15 +143,32 @@ require('win-switcher')
 require('win-expose')
 
 require('menubar')
+
+require('choose-countdown')
+APPS_SELECT_MODAL:bind(nil, 'c', "Select Countdown", showChooseCountdown)
+
+
 -- hotkey to layout current screen; see menubar.lua
 hs.hotkey.bind(hyper, "l", nil, layoutCurrentScreen)
 
+cheatsheet=hs.loadSpoon("KSheet")
+hs.hotkey.bind(hyper, "/", "Cheatsheet", function() cheatsheet:toggle() end)
 
+--- Keyboard key bindings
+hs.hotkey.bind('ctrl', 'left', nil,
+  function() hs.eventtap.keyStroke('alt', 'left') end)
+hs.hotkey.bind('ctrl', 'right', nil,
+  function() hs.eventtap.keyStroke('alt', 'right') end)
+
+
+require('url-handler')
 
 
 --- Next
+-- When is `local` needed?
 -- Quitter replacement
 -- Finicky replacement
+-- https://github.com/koekeishiya/yabai
 
 --- Ideas
 -- make text navigation/editing same across apps

@@ -42,10 +42,10 @@ WSELECT_MODAL:bind("ctrl", "left",  "going to space left", function() moveOneSpa
 WSELECT_MODAL:bind("ctrl", "right", "going to space right", function() moveOneSpace("right") end)
 
 ---=== Non-modal versions (for navigation speed)
-hs.hotkey.bind(ctrlcmd, "u",     "going to space left", function() moveOneSpace("left") end)
-hs.hotkey.bind(ctrlcmd, "o",     "going to space right", function() moveOneSpace("right") end)
-hs.hotkey.bind(ctrlcmd, "left",  "going to space left", function() moveOneSpace("left") end)
-hs.hotkey.bind(ctrlcmd, "right", "going to space right", function() moveOneSpace("right") end)
+hs.hotkey.bind(ctrlcmd, "u",     nil, function() moveOneSpace("left") end)
+hs.hotkey.bind(ctrlcmd, "o",     nil, function() moveOneSpace("right") end)
+hs.hotkey.bind(ctrlcmd, "left",  nil, function() moveOneSpace("left") end)
+hs.hotkey.bind(ctrlcmd, "right", nil, function() moveOneSpace("right") end)
 
 
 --- Focused window border
