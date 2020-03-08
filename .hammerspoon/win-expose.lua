@@ -11,6 +11,3 @@ expose_browsers = hs.expose.new{'Safari','Google Chrome'} -- specialized expose 
 
 -- then bind to a hotkey
 hs.expose.ui.maxHintLetters = 6
-hs.hotkey.bind(FLAGS_FOR_OTHER_MODES, KEY_FOR_HS_EXPOSE, 'Expose', function()expose:toggleShow()end)
-hs.hotkey.bind('ctrl-cmd-shift','k','App Expose',function()expose_app:toggleShow()end)
--- hs.hotkey.bind('ctrl-cmd','j','Expose',function()expose:toggleShow()end)
