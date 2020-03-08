@@ -27,7 +27,7 @@ end
 obj={}
 
 function obj:showChooseCountdown()
-  exitModal(APPS_SELECT_MODAL)
+  exitModal()
   showChooser(countdownChoices, startCountdown)
 end
 

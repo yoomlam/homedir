@@ -30,6 +30,7 @@ myUrlMapping:addUrlPatterns("org.mozilla.firefox", {
 myUrlMapping:addUrlPatterns("com.google.Chrome", {
   "google.com",
   ".*%.gle",
+  "citrixaccess.va.gov",
   "sentry.ds.va.gov",
   "app.datadoghq.com",
   "www.getclockwise.com",

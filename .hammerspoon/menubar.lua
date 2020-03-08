@@ -119,7 +119,7 @@ hs.hotkey.bind(hyper, "l", nil, layoutCurrentScreen)
 
 -- Do not make layoutMenu `local` to avoid garbage collection
 layoutMenu = hs.menubar.new()
-layoutMenu:setTitle("Layout")
+layoutMenu:setTitle("L")
 layoutMenu:setMenu({
   { title = "Layout" },
   { indent = 1, title = "Based on current screen", fn = layoutCurrentScreen },

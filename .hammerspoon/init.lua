@@ -1,4 +1,5 @@
 -- https://www.hammerspoon.org/go/
+-- Also, check out https://ke-complex-modifications.pqrs.org
 
 --- Common key modifiers
 ctrlcmd = {"ctrl", "cmd"}
@@ -45,7 +46,10 @@ KEY_FOR_WIN_SELECT = "pad2"
 --- Don't need this currently
 -- https://github.com/jasonrudolph/ControlEscape.spoon
 -- Reminder: System Preferences > Keyboard > Modifier Keys, and set the caps lock key to control.
--- hs.loadSpoon('ControlEscape'):start()
+-- interferes with doubletapping Ctrl: hs.loadSpoon('ControlEscape'):start()
+local fn2Esc=require('fn-to-escape')
+fn2Esc:init()
+fn2Esc:start()
 
 require('helpers')
 
@@ -68,7 +72,6 @@ local apps=require('apps')
 local appChoices={}
 APPS_LAUNCH_MODAL = kbModal:newModal(FLAGS_FOR_OTHER_MODES, KEY_FOR_KI_ENTITIES_MODE, "🍎 App Launch mode",
   nil, function()
-    exitModal(APPS_LAUNCH_MODAL)
     showChooser(appChoices, function(choice) apps:newWindow(choice['subText']) end)
   end)
 
@@ -91,11 +94,23 @@ addToAppModals(nil, "f", "Firefox")
 addToAppModals(nil, "g", "Google Chrome")
 addToAppModals(nil, "t", "Sublime Text")
 
+table.insert( appChoices, {text="n", subText="mdNotes (Sublime ~/Documents/mdNotes)"} )
+APPS_LAUNCH_MODAL:bind(nil, 'n', "mdNotes", function()
+  exitModal()
+  executeCommand("~/bin/subl ~/Documents/mdNotes/")
+end)
+
 --- Countdown progress bar
 local countdown=require('choose-countdown')
+table.insert( appChoices, {text="c", subText="Countdown"} )
 APPS_SELECT_MODAL:bind(nil, 'c', "Select Countdown", countdown.showChooseCountdown)
 APPS_LAUNCH_MODAL:bind(nil, 'c', "Select Countdown", countdown.showChooseCountdown)
 
+--- URL Chooser
+local urlChooser=require('choose-url')
+table.insert( appChoices, {text="e", subText="URL chooser"} )
+APPS_LAUNCH_MODAL:bind(nil, 'e', "Select URL", urlChooser.showUrlChooser)
+APPS_SELECT_MODAL:bind(nil, 'e', "Select URL", urlChooser.showUrlChooser)
 
 --- Use modal mode for window selection/navigation
 WSELECT_MODAL = kbModal:newModal(FLAGS_FOR_OTHER_MODES, KEY_FOR_WIN_SELECT, "🌬 Window Layout mode")
@@ -113,15 +128,6 @@ local function bindExecuteCommand(modifiers, key, cmd)
     end
     executeCommand(command)
 	end)
-end
-function executeCommand(command)
-  print("Running: "..command)
-  status = os.execute(command)
-  if not status then
-    print("Error running "..command)
-    hs.alert.show("Error running "..command)
-  end
-  print("  returning from executeCommand function")
 end
 
 print("== Application key bindings:")
@@ -145,7 +151,7 @@ local openMac=require('open-mac')
 openMac:start(bindExecuteCommand, txtClipboard)
 
 --- Other stuff
-require('audiodevice')
+-- require('audiodevice')
 require('win-switcher')
 require('win-expose')
 require('menubar')
@@ -155,15 +161,15 @@ cheatsheet=hs.loadSpoon("KSheet")
 hs.hotkey.bind(hyper, "/", "Cheatsheet", function() cheatsheet:toggle() end)
 
 --- Keyboard key bindings
-hs.hotkey.bind('ctrl', 'left', nil,
-  function() hs.eventtap.keyStroke('alt', 'left') end)
-hs.hotkey.bind('ctrl', 'right', nil,
-  function() hs.eventtap.keyStroke('alt', 'right') end)
+--- See Karabiner
+-- hs.hotkey.bind('ctrl', 'left', nil,
+--   function() hs.eventtap.keyStroke('alt', 'left', 0) end)
+-- hs.hotkey.bind('ctrl', 'right', nil,
+--   function() hs.eventtap.keyStroke('alt', 'right', 0) end)
 
 --- Replacement for Finicky
 local urlHandler=require('url-handler')
 urlHandler:start()
-
 
 --- Next
 -- play with win-expose

@@ -1,10 +1,10 @@
 local obj={}
 
 function obj:newWindow(appName)
+  exitModal()
   hs.alert.show("Launching new "..appName)
   app=hs.application.find(appName)
   app:selectMenuItem("New Window")
-  exitModal(APPS_LAUNCH_MODAL)
   app:activate()
 end
 
@@ -50,7 +50,7 @@ local function selectWindowViaMenu(choice)
 end
 
 function obj:showAppChooser(appName)
-  exitModal(APPS_SELECT_MODAL)
+  exitModal()
   local chooser=hs.chooser.new(function(choice) raiseWindow(choice) end)
   chooser:choices(buildChoices(appName))
   chooser:show()

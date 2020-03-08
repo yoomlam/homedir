@@ -124,6 +124,7 @@ function obj:setProgress(progress, notifystr)
                 title = "Time(" .. notifystr .. " mins) is up!",
                 informativeText = "Now is " .. os.date("%X")
             }):send()
+            hs.alert.show("Time is " .. os.date("%X"), "until clicked")
         end
     else
         obj.canvas[1].frame.w = tostring(progress)

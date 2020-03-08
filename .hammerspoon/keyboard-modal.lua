@@ -14,28 +14,30 @@ local function showHotkeysHelp()
   b:deleteOnClose(true)
   b:level(hs.drawing.windowLevels.modalPanel)
   b:show()
-  b:hswindow():raise()
-  b:focus()
+  b:hswindow():activate()
   return b
 end
 hs.hotkey.bind(ctrlcmdshift, "/", "Hotkeys help", showHotkeysHelp)
 
 -- show help when entering modal
 obj.showModalHelpUponEntry = false
+obj.modalHelpWindow = nil
 
 local function enteredModal(modal)
   if obj.showModalHelpUponEntry then
-    modalHelpWindow=showHotkeysHelp()
+    obj.modalHelpWindow=showHotkeysHelp()
   else
     hs.alert.show('Press Ctrl-Cmd-Shift-/ to see hotkeys', 4)
   end
 end
 
+obj.currentModal=nil
+
 -- define as global function to allow exiting from modal anywhere
 function exitModal(modal, exitMsg)
-  if modalHelpWindow then
-    modalHelpWindow:delete(true, 1)
-    modalHelpWindow=nil
+  if obj.modalHelpWindow then
+    obj.modalHelpWindow:delete(true, 1)
+    obj.modalHelpWindow=nil
   end
   if modalMsgUuid then
     hs.alert.closeAll()
@@ -44,9 +46,13 @@ function exitModal(modal, exitMsg)
   if exitMsg then
     hs.alert.show(exitMsg, 2)
   end
-  modal:exit()
+  if modal==nil then
+    modal=obj.currentModal
+  end
+  if modal then
+    modal:exit()
+  end
 end
-
 
 function obj:newModal(flags, key, enterMsg, enterMsgDuration, showChooserFunc)
   if not enterMsgDuration then
@@ -55,8 +61,12 @@ function obj:newModal(flags, key, enterMsg, enterMsgDuration, showChooserFunc)
 
   local modal=hs.hotkey.modal.new(flags, key)
   function modal:entered()
+    obj.currentModal=self
     modalMsgUuid=hs.alert.show(enterMsg, enterMsgDuration)
     enteredModal(self)
+  end
+  function modal:exited()
+    obj.currentModal=nil
   end
 
   if showChooserFunc then

@@ -11,6 +11,7 @@ function listToChoices(array)
 end
 
 function showChooser(choices, onChoice)
+  exitModal()
   -- local onChoiceFunc
   -- if onChoice==nil then
   --   onChoiceFunc=function(choice) raiseWindow(choice) end
@@ -25,4 +26,14 @@ function showChooser(choices, onChoice)
   end
   chooser:choices(choices)
   chooser:show()
+end
+
+function executeCommand(command)
+  print("Running: "..command)
+  status = os.execute(command)
+  if not status then
+    print("Error running "..command)
+    hs.alert.show("Error running "..command)
+  end
+  print("  returning from executeCommand function")
 end
