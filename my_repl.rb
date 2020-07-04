@@ -44,15 +44,32 @@ def configure_pry
   $PRY_CONFIGURED=true
 end
 
-## === TaskTreeRender ===========================
+## === Introspection ===========================
 
-class Object
-  # print methods local to an object's class
-  # someobj.local_methods
-  def local_methods
-    (methods - Object.instance_methods).sort
-  end
+# print methods local to an object's class
+# someobj.local_methods
+def local_methods(obj=self)
+  (obj.methods - Object.instance_methods).sort
 end
+
+def obj_inst_methods(obj=self)
+  clazz = obj.is_a?(Class) ? obj : obj.class
+  clazz.instance_methods(false).sort
+end
+def public_methods_without_parent(obj=self)
+  (obj.public_methods - obj.class.superclass.methods).sort
+end
+
+IGNORED_PREFIXES = %w"_ before_ after_ autosave_"
+# ignore_prefixes(obj_inst_methods(obj))
+# ignore_prefixes(methods_without_parent(obj))
+def ignore_prefixes(methods)
+  methods.reject{|m|
+    IGNORED_PREFIXES.any?{|prefix| m.to_s.start_with?(prefix)}
+  }
+end
+
+## === Print tables ===========================
 
 # Usage examples: print table transposed
 #   print_table_t Video.where(key: '123'), :created_at, :updated_at, :published
