@@ -1,6 +1,5 @@
 obj={}
 
-obj.hotkeyHelpRect = hs.geometry.rect(250, 250, 300, 400)
 local function showHotkeysHelp()
   local hotkeyMsgTab=hs.fnutils.map(hs.hotkey.getHotkeys(), function(elem) return elem.msg end)
   local hotkeyMsg=""
@@ -8,19 +7,19 @@ local function showHotkeysHelp()
     hotkeyMsg = hotkeyMsg.."<li>"..msg.."</li>"
   end
   -- hs.dialog.alert(20, 20, nil, "Hotkeys", hotkeyMsg, "Single Button")
-  local b=hs.webview.newBrowser(obj.hotkeyHelpRect)
+  local b=hs.webview.newBrowser(hs.geometry.rect(250, 250, 300, 400))
   b:html("<h3>Hotkeys</h3><ul>"..hotkeyMsg.."</ul>")
   b:closeOnEscape(true)
   b:deleteOnClose(true)
   b:level(hs.drawing.windowLevels.modalPanel)
   b:show()
-  b:hswindow():activate()
+  -- b:hswindow():activate()
   return b
 end
 hs.hotkey.bind(ctrlcmdshift, "/", "Hotkeys help", showHotkeysHelp)
 
 -- show help when entering modal
-obj.showModalHelpUponEntry = false
+obj.showModalHelpUponEntry = true
 obj.modalHelpWindow = nil
 
 local function enteredModal(modal)

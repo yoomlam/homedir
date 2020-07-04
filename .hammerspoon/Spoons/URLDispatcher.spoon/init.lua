@@ -74,7 +74,7 @@ function obj:dispatchURL(scheme, host, params, fullUrl)
          id = app
          if id ~= nil then
             self.logger.df("Match found, opening with '%s'", id)
-            hs.application.launchOrFocusByBundleID(id)
+            -- Don't raise app: hs.application.launchOrFocusByBundleID(id)
             hs.urlevent.openURLWithBundle(url, id)
             return
          end

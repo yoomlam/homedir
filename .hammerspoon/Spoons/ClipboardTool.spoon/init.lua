@@ -345,6 +345,12 @@ function obj:reduceSize(text)
   return string.sub(text, 1, lastLowerPos)
 end
 
+alertStyle={
+  strokeColor={ red = 0.8, green = 0, blue = 0.8, alpha = 1.0 },
+  radius=0,
+  textSize=14,
+  atScreenEdge=1
+}
 
 --- ClipboardTool:checkAndStorePasteboard()
 --- Method
@@ -367,7 +373,8 @@ function obj:checkAndStorePasteboard()
                 size = #current_clipboard
                 end
             end
-            hs.alert.show("Copied " .. size .. " chars")
+            startingChars = string.sub(current_clipboard, 1, 20)
+            hs.alert.show("Copied " .. size .. " chars: " .. startingChars, alertStyle)
             self.logger.df("Adding %s to clipboard history", current_clipboard)
             self:pasteboardToClipboard(current_clipboard)
          else

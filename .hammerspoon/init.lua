@@ -27,10 +27,10 @@ CURR_SCREEN_WINFILTER = hs.window.filter.new(function(w)
   return w:screen() == hs.screen.mainScreen() and CURR_SPACE_WINFILTER:isWindowAllowed(w)
 end)
 
--- interferes with doubletapping Ctrl: hs.loadSpoon('ControlEscape'):start()
--- Reminder: System Preferences > Keyboard > Modifier Keys, and set the caps lock key to a modifier key.
 -- Use Karabiner to map CapsLock to Fn
+-- Karabiner overrides this: System Preferences > Keyboard > Modifier Keys, and set the caps lock key to a modifier key.
 require('modkey-to-escape'):start('fn')
+-- interferes with doubletapping Ctrl: hs.loadSpoon('ControlEscape'):start()
 
 --- Keyboard key bindings
 --- See Karabiner https://ke-complex-modifications.pqrs.org
@@ -38,6 +38,10 @@ require('modkey-to-escape'):start('fn')
 --   function() hs.eventtap.keyStroke('alt', 'left', 0) end)
 -- hs.hotkey.bind('ctrl', 'right', nil,
 --   function() hs.eventtap.keyStroke('alt', 'right', 0) end)
+hs.hotkey.bind('ctrl', 'up', nil,
+  function() hs.eventtap.keyStroke(nil, 'pageup', 0) end)
+hs.hotkey.bind('ctrl', 'down', nil,
+  function() hs.eventtap.keyStroke(nil, 'pagedown', 0) end)
 
 --- Make this hard to reach since doubletap-flag will be used
 -- Keys that don't work: "f"*, "home", "end"
@@ -61,19 +65,30 @@ require('helpers')
 ---- Modals
 local kbModal=require('keyboard-modal')
 local apps=require('apps')
+local KEY_FUNC_MAP={}
 
 --- Use modal mode for launching applications
 local appChoices={}
 APPS_LAUNCH_MODAL = kbModal:newModal(hypershift, ENTITIES_ModalKey, "🍎 App Launch mode",
   nil, function()
-    showChooser(appChoices, function(choice) apps:newWindow(choice['subText']) end)
+    showChooser(appChoices, function(choice)
+      if choice then
+        if choice['execCommand'] then
+          executeCommand(choice['execCommand'])
+        elseif choice['funcKey'] then
+          KEY_FUNC_MAP[choice['funcKey']]()
+        else
+          apps:newWindow(choice['subText'])
+        end
+      end
+    end)
   end)
 
 --- Use modal mode for selecting windows for application
 APPS_SELECT_MODAL = kbModal:newModal(hypershift, SELECT_ModalKey, "📚 App Select mode",
   nil, function()
     local win=hs.window.focusedWindow()
-    apps:showAppChooser(win:application():name())
+    apps:showAppChooser(win:application():name(), KEY_FUNC_MAP)
   end)
 
 function addToAppModals(flags, key, appName)
@@ -82,21 +97,30 @@ function addToAppModals(flags, key, appName)
   APPS_SELECT_MODAL:bind(flags, key, "Select "..appName, function() apps:showAppChooser(appName) end)
 end
 
-addToAppModals(nil, "x", "iTerm2")
+addToAppModals(nil, "x", "iTerm")
 addToAppModals(nil, "s", "Safari")
 addToAppModals(nil, "f", "Firefox")
 addToAppModals(nil, "g", "Google Chrome")
 addToAppModals(nil, "t", "Sublime Text")
 
-table.insert( appChoices, {text="n", subText="mdNotes (Sublime ~/Documents/mdNotes)"} )
+table.insert( appChoices, { text="n", subText="mdNotes (Sublime ~/Documents/mdNotes)",
+  execCommand="~/bin/subl ~/Documents/mdNotes/" } )
 APPS_LAUNCH_MODAL:bind(nil, 'n', "mdNotes", function()
   exitModal()
   executeCommand("~/bin/subl ~/Documents/mdNotes/")
 end)
 
+table.insert( appChoices, { text="h", subText="~/.hammerspoon (Sublime ~/.hammerspoon/)",
+  execCommand="~/bin/subl ~/.hammerspoon/" } )
+APPS_LAUNCH_MODAL:bind(nil, 'h', "hammerspoon", function()
+  exitModal()
+  executeCommand("~/bin/subl ~/.hammerspoon/")
+end)
+
 --- Countdown progress bar
 local countdown=require('choose-countdown')
-table.insert( appChoices, {text="c", subText="Countdown"} )
+table.insert( appChoices, {text="c", subText="Countdown", funcKey='countdown'} )
+KEY_FUNC_MAP['countdown']=countdown.showChooseCountdown
 APPS_SELECT_MODAL:bind(nil, 'c', "Select Countdown", countdown.showChooseCountdown)
 APPS_LAUNCH_MODAL:bind(nil, 'c', "Select Countdown", countdown.showChooseCountdown)
 
@@ -105,6 +129,12 @@ local urlChooser=require('choose-url')
 table.insert( appChoices, {text="e", subText="URL chooser"} )
 APPS_LAUNCH_MODAL:bind(nil, 'e', "Select URL", urlChooser.showUrlChooser)
 APPS_SELECT_MODAL:bind(nil, 'e', "Select URL", urlChooser.showUrlChooser)
+
+--- Paste clip
+local clipPaster=require('paste-clip')
+table.insert( appChoices, {text="v", subText="Clip chooser"} )
+APPS_LAUNCH_MODAL:bind(nil, 'v', "Select URL", clipPaster.showClipChooser)
+APPS_SELECT_MODAL:bind(nil, 'v', "Select URL", clipPaster.showClipChooser)
 
 --- Use modal mode for window selection/navigation
 WSELECT_MODAL = kbModal:newModal(hypershift, WIN_SELECT_ModalKey, "🌬 Window Layout mode")
@@ -126,6 +156,9 @@ local function bindExecuteCommand(modifiers, key, cmd)
 end
 
 print("== Application key bindings:")
+hs.hotkey.bind(ctrlcmd, "i", function() apps:newWindow("iTerm") end)
+hs.hotkey.bind(ctrlcmd, "x", function() apps:cmdN("net.kovidgoyal.kitty", "/usr/local/bin/kitty -d=$HOME &") end)
+hs.hotkey.bind(ctrlcmdshift, "x", function() executeCommand("/usr/local/bin/kitty -d=$HOME &") end)
 bindExecuteCommand(ctrlcmd, "p", "open -a Screenshot")
 bindExecuteCommand(ctrlcmd, "m", "open -a 'Mission Control'")
 bindExecuteCommand("alt-shift", "z", "pmset displaysleepnow")
@@ -171,6 +204,7 @@ cheatsheet=hs.loadSpoon("KSheet")
 hs.hotkey.bind(hyper, "/", "Cheatsheet", function() cheatsheet:toggle() end)
 
 --- Next
+-- Markdown keybindings
 -- play with win-expose
 -- Quitter replacement
 -- https://github.com/koekeishiya/yabai

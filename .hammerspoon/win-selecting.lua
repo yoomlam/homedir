@@ -15,14 +15,14 @@ WSELECT_MODAL:bind(nil, "down",  "Focus down",  nil, function() hs.window.focuse
 
 ---=== Non-modal versions (for navigation speed)
 --- Change focus
-hs.hotkey.bind(ctrlcmd, "j",     "Focus left",  nil, function() hs.window.focusedWindow():focusWindowWest (CURR_SPACE_WINFILTER:getWindows(), false, false) end)
-hs.hotkey.bind(ctrlcmd, "l",     "Focus right", nil, function() hs.window.focusedWindow():focusWindowEast (CURR_SPACE_WINFILTER:getWindows(), false, false) end)
-hs.hotkey.bind(ctrlcmd, "i",     "Focus up",    nil, function() hs.window.focusedWindow():focusWindowNorth(CURR_SPACE_WINFILTER:getWindows(), false, false) end)
-hs.hotkey.bind(ctrlcmd, "k",     "Focus down",  nil, function() hs.window.focusedWindow():focusWindowSouth(CURR_SPACE_WINFILTER:getWindows(), false, false) end)
--- hs.hotkey.bind(ctrlcmd, "left",  "Focus left",  nil, function() hs.window.focusedWindow():focusWindowWest (CURR_SPACE_WINFILTER:getWindows(), false, false) end)
--- hs.hotkey.bind(ctrlcmd, "right", "Focus right", nil, function() hs.window.focusedWindow():focusWindowEast (CURR_SPACE_WINFILTER:getWindows(), false, false) end)
--- hs.hotkey.bind(ctrlcmd, "up",    "Focus up",    nil, function() hs.window.focusedWindow():focusWindowNorth(CURR_SPACE_WINFILTER:getWindows(), false, false) end)
--- hs.hotkey.bind(ctrlcmd, "down",  "Focus down",  nil, function() hs.window.focusedWindow():focusWindowSouth(CURR_SPACE_WINFILTER:getWindows(), false, false) end)
+hs.hotkey.bind(hyper, "j",     "Focus left",  nil, function() hs.window.focusedWindow():focusWindowWest (CURR_SPACE_WINFILTER:getWindows(), false, false) end)
+hs.hotkey.bind(hyper, "l",     "Focus right", nil, function() hs.window.focusedWindow():focusWindowEast (CURR_SPACE_WINFILTER:getWindows(), false, false) end)
+hs.hotkey.bind(hyper, "i",     "Focus up",    nil, function() hs.window.focusedWindow():focusWindowNorth(CURR_SPACE_WINFILTER:getWindows(), false, false) end)
+hs.hotkey.bind(hyper, "k",     "Focus down",  nil, function() hs.window.focusedWindow():focusWindowSouth(CURR_SPACE_WINFILTER:getWindows(), false, false) end)
+-- hs.hotkey.bind(hyper, "left",  "Focus left",  nil, function() hs.window.focusedWindow():focusWindowWest (CURR_SPACE_WINFILTER:getWindows(), false, false) end)
+-- hs.hotkey.bind(hyper, "right", "Focus right", nil, function() hs.window.focusedWindow():focusWindowEast (CURR_SPACE_WINFILTER:getWindows(), false, false) end)
+-- hs.hotkey.bind(hyper, "up",    "Focus up",    nil, function() hs.window.focusedWindow():focusWindowNorth(CURR_SPACE_WINFILTER:getWindows(), false, false) end)
+-- hs.hotkey.bind(hyper, "down",  "Focus down",  nil, function() hs.window.focusedWindow():focusWindowSouth(CURR_SPACE_WINFILTER:getWindows(), false, false) end)
 
 
 --==== Moving across spaces uses 'ctrl'
@@ -42,15 +42,17 @@ WSELECT_MODAL:bind("ctrl", "left",  "going to space left", function() moveOneSpa
 WSELECT_MODAL:bind("ctrl", "right", "going to space right", function() moveOneSpace("right") end)
 
 ---=== Non-modal versions (for navigation speed)
-hs.hotkey.bind(ctrlcmd, "u",     nil, function() moveOneSpace("left") end)
-hs.hotkey.bind(ctrlcmd, "o",     nil, function() moveOneSpace("right") end)
+hs.hotkey.bind(hyper, "u",     nil, function() moveOneSpace("left") end)
+hs.hotkey.bind(hyper, "o",     nil, function() moveOneSpace("right") end)
+
 hs.hotkey.bind(ctrlcmd, "left",  nil, function() moveOneSpace("left") end)
 hs.hotkey.bind(ctrlcmd, "right", nil, function() moveOneSpace("right") end)
 
 
 --- Focused window border
-global_border = nil
-BORDER_WIDTH = 6
+local global_border = nil
+local BORDER_WIDTH = 3
+local strokeWidth=BORDER_WIDTH*2
 function redrawBorder()
   win = hs.window.focusedWindow()
   if win ~= nil then
@@ -64,23 +66,44 @@ function redrawBorder()
     	size['w']+BORDER_WIDTH, size['h']+BORDER_WIDTH))
     global_border:setStrokeColor({["red"]=0.8,["blue"]=0.8,["green"]=0,["alpha"]=0.8})
     global_border:setFill(false)
-    global_border:setStrokeWidth(BORDER_WIDTH)
+    global_border:setStrokeWidth(strokeWidth)
     global_border:show()
   else
-    -- if global_border ~= nil then
-    --   global_border:delete()
-    -- end
   end
 end
-redrawBorder()
+-- redrawBorder()
+
+function eraseBorder()
+  if global_border ~= nil then
+      global_border:delete()
+      global_border=nil
+  end
+end
 
 allwindows = hs.window.filter.new(nil)
 -- allwindows:subscribe(hs.window.filter.windowClosed,    redrawBorder)
-allwindows:subscribe(hs.window.filter.windowCreated,   redrawBorder)
-allwindows:subscribe(hs.window.filter.windowFocused,   redrawBorder)
-allwindows:subscribe(hs.window.filter.windowMoved,     redrawBorder)
-allwindows:subscribe(hs.window.filter.windowUnfocused, redrawBorder)
+-- allwindows:subscribe(hs.window.filter.windowCreated,   redrawBorder)
+-- allwindows:subscribe(hs.window.filter.windowFocused,   redrawBorder)
+-- allwindows:subscribe(hs.window.filter.windowMoved,     redrawBorder)
+-- allwindows:subscribe(hs.window.filter.windowUnfocused, eraseBorder)
 
+local drawBorder = require('drawing').drawBorder
+local cfilter = hs.window.filter.new()
+  :setCurrentSpace(true)
+  :setDefaultFilter()
+  :setOverrideFilter({
+    fullscreen = false,
+    allowRoles = { 'AXStandardWindow' }
+  })
+
+cfilter:subscribe({
+  -- hs.window.filter.windowCreated,
+  -- hs.window.filter.windowDestroyed,
+  hs.window.filter.windowMoved,
+  hs.window.filter.windowFocused,
+  hs.window.filter.windowUnfocused,
+}, drawBorder)
+drawBorder()
 
 --- This draws a bright red circle around the pointer for a few seconds
 function mouseHighlight()
@@ -98,4 +121,20 @@ function mouseHighlight()
     mouseCircle:show()
 
     mouseCircleTimer = hs.timer.doAfter(3, function() mouseCircle:delete() end)
+end
+
+function dumpWindows()
+  hs.fnutils.each(hs.window.allWindows(), function(win)
+    print(hs.inspect({
+      id               = win:id(),
+      title            = win:title(),
+      app              = win:application():name(),
+      role             = win:role(),
+      subrole          = win:subrole(),
+      frame            = win:frame(),
+      buttonZoom       = axuiWindowElement(win):attributeValue('AXZoomButton'),
+      buttonFullScreen = axuiWindowElement(win):attributeValue('AXFullScreenButton'),
+      isResizable      = axuiWindowElement(win):isAttributeSettable('AXSize')
+    }))
+  end)
 end

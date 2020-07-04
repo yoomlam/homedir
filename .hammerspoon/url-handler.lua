@@ -19,7 +19,6 @@ end
 
 myUrlMapping:addUrlPatterns("org.mozilla.firefox", {
   "github.com",
-  "hackmd.io",
   "dsva.slack.com",
   "app.zenhub.com",
   "app.circleci.com",
@@ -40,9 +39,12 @@ myUrlMapping:addUrlPatterns("com.google.Chrome", {
   "airtable.com",
   ".*%.amazonaws-us-gov%.com",
   ".*%.pagerduty%.com",
+  ".*%.newrelic%.com",
   ".*%.va%.gov",
   "caseflowdemo.com",
-  "app.retrium.com"
+  "app.retrium.com",
+  "latticehq.com",
+  "hackmd.io"
 })
 myUrlMapping:addUrlPatterns("us.zoom.xos", { "zoom.us" })
 

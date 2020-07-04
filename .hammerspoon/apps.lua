@@ -4,9 +4,39 @@ function obj:newWindow(appName)
   exitModal()
   hs.alert.show("Launching new "..appName)
   app=hs.application.find(appName)
-  app:selectMenuItem("New Window")
-  app:activate()
+
+  -- hs.application.watcher.new(winWatcher)
+
+  if app then
+    app:selectMenuItem("New Window")
+    app:activate()
+  else
+    hs.application.launchOrFocus(appName)
+  end
 end
+
+function obj:cmdN(appName, startAppCmd)
+  exitModal()
+  hs.alert.show("Launching new "..appName)
+  app=hs.application.find(appName)
+
+  -- hs.application.watcher.new(winWatcher)
+
+  if app then
+    app:activate()
+    hs.eventtap.keyStroke({"cmd"}, "n")
+  else
+    if startAppCmd then
+      executeCommand(startAppCmd)
+    else
+      hs.application.launchOrFocus(appName)
+    end
+  end
+end
+
+-- local function winWatcher(appName, event, app)
+
+-- end
 
 local function buildChoices(appName)
   local wins=hs.window.filter.new{appName}:getWindows()
@@ -45,13 +75,21 @@ end
 
 local function selectWindowViaMenu(choice)
   local app=hs.application.find(choice['appName'])
-  app:activate()
+  -- needed? app:activate()
   return app:selectMenuItem({"Window", choice['title']})
 end
 
-function obj:showAppChooser(appName)
+function obj:showAppChooser(appName, KEY_FUNC_MAP)
   exitModal()
-  local chooser=hs.chooser.new(function(choice) raiseWindow(choice) end)
+  local chooser=hs.chooser.new(function(choice)
+    if choice then
+      if choice['funcKey'] then
+        KEY_FUNC_MAP[choice['funcKey']]()
+      else
+        raiseWindow(choice)
+      end
+    end
+  end)
   chooser:choices(buildChoices(appName))
   chooser:show()
 end
