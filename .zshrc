@@ -47,9 +47,12 @@ export UPDATE_ZSH_DAYS=15
 # called when rendering command prompt
 DISABLE_AUTO_TITLE="true"
 function precmd () {
-  local SHORT_PWD=`echo ${PWD/$HOME/\~} | sed 's:\([^/][^/][^/]\)[^/]*/:\1/:g'`
-  window_title="\033]0;${SHORT_PWD}\007"
-  echo -ne "$window_title"
+  if [ "$MY_WINDOWTITLE" ]; then
+    echo -ne "\033]0;${MY_WINDOWTITLE}\007"
+  else
+    local SHORT_PWD=`echo ${PWD/$HOME/\~} | sed 's:\([^/][^/][^/]\)[^/]*/:\1/:g'`
+    echo -ne "\033]0;${SHORT_PWD}\007"
+  fi
 }
 
 # Uncomment the following line to enable command auto-correction.
@@ -201,8 +204,9 @@ source ~/.alias-$HOST
 #export PROMPT="$fg_bold[blue][ $fg[red]%t $fg_bold[blue]] $fg_bold[blue] [ $fg[red]%~ $(git_prompt_info)$fg[yellow]$(rvm_prompt_info)$fg_bold[blue] ]$reset_color
 # $ "
 
-bindkey '\M.' insert-last-word
-bindkey '\C.' insert-last-word
+# Reminder: kitty.conf: macos_option_as_alt left
+bindkey '\M-.' insert-last-word
+# See kitty.conf: bindkey '\C-.' insert-last-word
 
 [ -f ~/.fzf.zsh ] && source ~/.fzf.zsh
 
@@ -234,15 +238,15 @@ conda_(){
 
 # icu4c is keg-only, which means it was not symlinked into /usr/local,
 # because macOS provides libicucore.dylib (but nothing else).
-# 
+#
 # If you need to have icu4c first in your PATH run:
 #   echo 'export PATH="/usr/local/opt/icu4c/bin:$PATH"' >> ~/.zshrc
 #   echo 'export PATH="/usr/local/opt/icu4c/sbin:$PATH"' >> ~/.zshrc
-# 
+#
 # For compilers to find icu4c you may need to set:
 #   export LDFLAGS="-L/usr/local/opt/icu4c/lib"
 #   export CPPFLAGS="-I/usr/local/opt/icu4c/include"
-# 
+#
 # For pkg-config to find icu4c you may need to set:
 #   export PKG_CONFIG_PATH="/usr/local/opt/icu4c/lib/pkgconfig"
 
@@ -250,4 +254,9 @@ conda_(){
 #export GEM_HOME="$HOME/.gem"
 #PATH=$GEM_HOME/bin:$PATH
 
+# https://sw.kovidgoyal.net/kitty/index.html#zsh
+autoload -Uz compinit
+compinit
+# Completion for kitty
+kitty + complete setup zsh | source /dev/stdin
 

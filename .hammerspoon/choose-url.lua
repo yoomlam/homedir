@@ -10,7 +10,7 @@ local urlChoices = {
   { text="Zenhub", subText="https://github.com/department-of-veterans-affairs/caseflow/issues/13175#workspaces/caseflow-5915dd178f67e20b5553ba0c/board?repos=51449239,79498890" },
   { text="Ticket Estimation", subText="https://hackmd.io/th85ORHnR8GIxJUVTkhpjw?edit" },
   { text="Hammerspoon docs", subText="https://www.hammerspoon.org/docs"},
-  { text="Hammerspoon init.lua", subText="file:///"..homePath.."/.hammerspoon/init.lua" },
+  { text="Hammerspoon config", subText="file:///"..homePath.."/.hammerspoon" },
   { text="Finder Desktop", subText="file://"..homePath.."/Desktop" },
   { text="Finder Documents", subText="file://"..homePath.."/Documents" },
   { text="Finder Downloads", subText="file://"..homePath.."/Downloads" },
