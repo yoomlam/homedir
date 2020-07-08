@@ -4,6 +4,7 @@
 #   * have this file be .pryrc or linked as .pryrc
 # If rails console opens an IRB REPL, you have options:
 #   * On the command prompt, `IRBRC='path/to/this/file' bin/rails c`
+#     See https://github.com/department-of-veterans-affairs/appeals-deployment/pull/2810#
 #   * Within the IRB prompt, `load "path/to/this/file"`
 #   * On the command prompt, run `PRYRC="path/to/this/file" rails console`
 #     Then within the IRB console, `require 'pry'; pry`
@@ -205,6 +206,16 @@ def user(id)
   puts "Found #{users.count} users with full_name like %#{id.upcase}%: #{users.map{|u| [u.css_id, u.full_name]}}"
 end
 
+def staff(id)
+	return VACOLS:Staff.find_by(sdomainid: id.css_id) if id.is_a? User
+
+	staff=VACOLS::Staff.find_by(slogid: id.upcase)
+	return staff if staff
+
+	staff=VACOLS::Staff.find_by(sdomainid: id.upcase)
+	return staff if staff
+end
+
 # p_user user "BvaAAbshire"
 def p_user(obj)
   user = obj if obj.is_a?(User)
@@ -255,7 +266,8 @@ def p_appeal(appeal)
       p_hearing(hearing)
     } if defined? p_hearing
 
-    ris=appeal.issues[:request_issues]
+    ris=appeal.issues
+    ris=ris[:request_issues] if appeal.is_a? Appeal
     puts "---- #{ris.count} Request Issues"
     p_request_issues(ris) if defined? p_request_issues
 
