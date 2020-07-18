@@ -9,6 +9,8 @@
 #   * On the command prompt, run `PRYRC="path/to/this/file" rails console`
 #     Then within the IRB console, `require 'pry'; pry`
 #   * On command prompt, `bin/rails c -- 'path/to/this/file'` # Ctrl-C causes exception
+#
+# https://github.com/department-of-veterans-affairs/caseflow/wiki/Rails-Console-Code-Snippets
 
 puts "Loading #{File.expand_path(__FILE__)} ..."
 
@@ -29,6 +31,7 @@ def _set_pry_prompt
 end
 
 def tiny_prompt
+  sql_off
   tiny_prompt=proc { "\001\e[0;35m\002> \001\e[0m\002" }
   pry({ prompt: tiny_prompt })
 end
@@ -147,6 +150,10 @@ def treee_attrs(*atts)
   end
 end
 
+def treee_add_attrs(*atts)
+  treee_attrs(treee.attrs + atts)
+end
+
 ## === helper methods ============================
 
 def uuid?(uuid)
@@ -163,10 +170,13 @@ def sql_on
 end
 
 # Suppress SQL queries to reduce console clutter
+$NESTED_QUIETLY=0
 def quietly
-  sql_off
+  sql_off if $NESTED_QUIETLY == 0
+  $NESTED_QUIETLY += 1
   ret_value = yield
-  sql_on
+  $NESTED_QUIETLY -= 1
+  sql_on if $NESTED_QUIETLY == 0
   ret_value
 end
 
@@ -218,19 +228,24 @@ end
 
 # p_user user "BvaAAbshire"
 def p_user(obj)
-  user = obj if obj.is_a?(User)
-  user = user(obj) if user.nil?
+  quietly do
+    user = obj if obj.is_a?(User)
+    user = user(obj) if user.nil?
 
-  puts UserRepository.user_info_from_vacols(user.css_id)
-  puts UserRepository.user_info_for_idt(user.css_id)
+    puts UserRepository.user_info_from_vacols(user.css_id)
+    puts UserRepository.user_info_for_idt(user.css_id)
 
-  puts VACOLS::Staff.find_by_sdomainid(user.css_id)&.attributes
+    puts VACOLS::Staff.find_by_sdomainid(user.css_id)&.attributes
 
-  # Can also run this on the command line such as
-  # `CSS_ID=BVAAABSHIRE bundle exec rake users:footprint`
-  pp UserReporter.new(user.css_id).report
-  user
+    # Can also run this on the command line such as
+    # `CSS_ID=BVAAABSHIRE bundle exec rake users:footprint`
+    pp UserReporter.new(user.css_id).report
+    user
+  end
 end
+
+# Need to access external systems
+RequestStore[:current_user] = User.system_user
 
 # authenticate user
 def auth_user(user)
@@ -253,9 +268,7 @@ def p_appeal(appeal)
   quietly do
     appeal.treee
 
-    if appeal.is_a? LegacyAppeal
-      p_legacy_appeal(appeal)
-    end
+    p_legacy_appeal(appeal) if appeal.is_a?(LegacyAppeal)
 
     AttorneyCaseReview.find_by(task_id: appeal.tasks.pluck(:id)).tap {|acr| puts acr&.inspect }
 
@@ -267,15 +280,21 @@ def p_appeal(appeal)
     } if defined? p_hearing
 
     ris=appeal.issues
-    ris=ris[:request_issues] if appeal.is_a? Appeal
-    puts "---- #{ris.count} Request Issues"
+    ris=ris[:request_issues] if appeal.is_a?(Appeal)
+    puts "---- #{ris.count} Request Issue(s)"
     p_request_issues(ris) if defined? p_request_issues
 
     rius = RequestIssuesUpdate.where(review: appeal)
-    puts "---- #{rius.count} Request Issues Update"
+    puts "---- #{rius.count} Request Issues Update(s)"
     rius.each_with_index{|riu,i|
       p_request_issue_update(riu,i)
     } if defined? p_request_issue_update
+
+    if appeal.is_a?(LegacyAppeal)
+      decs=appeal.decisions
+      puts "---- #{decs.count} Decision(s)"
+      decs.each{|doc| puts "  #{doc&.inspect}"}
+    end
 
     appeal
   end
@@ -334,7 +353,8 @@ end
 def p_hearing(hearing)
   quietly do
     puts hearing.inspect
-    puts "    Day:#{[hearing.hearing_day.scheduled_for, hearing.hearing_day.request_type, hearing.hearing_day.regional_office]}, Judge:#{[hearing.judge.css_id, hearing.judge.full_name]}"
+    puts "    Day:#{[hearing.hearing_day.scheduled_for, hearing.hearing_day.request_type, hearing.hearing_day.regional_office]}, "+
+      "Judge:#{[hearing.judge.css_id, hearing.judge.full_name]}" if hearing.hearing_day
 
     p_legacy_hearing(hearing) if hearing.is_a? LegacyHearing
   end
@@ -410,6 +430,27 @@ def p_epe(epe)
     end
   end
   puts output.join('\n')
+end
+
+## === SQL helpers ==============================
+
+def sql_to_csv(raw_conn, sql)
+  output = []
+  raw_conn.copy_data("COPY (#{sql.chomp(';')}) TO STDOUT WITH (FORMAT CSV, HEADER TRUE);") do
+    while row = raw_conn.get_copy_data
+      output << row
+    end
+  end
+  output
+end
+
+def oracle_sql_to_csv(conn, sql)
+  output = []
+  result = conn.execute(sql)
+  while r = result.fetch_hash
+    output << r.values.join(',')
+  end
+  output
 end
 
 ## === Start Pry =================================
