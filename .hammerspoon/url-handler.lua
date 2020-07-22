@@ -17,23 +17,26 @@ function myUrlMapping:addFuncForUrlPatterns(openFunc, patterns)
   -- print(hs.inspect(self))
 end
 
-myUrlMapping:addUrlPatterns("org.mozilla.firefox", {
-  "github.com",
-  "dsva.slack.com",
-  "app.zenhub.com",
-  "app.circleci.com",
-  ".*amazonaws-us-gov.com",
-  "caseflow.statuspage.io",
+-- To find bundleId, open app's content and look for "bundleId" in a plist file
 
+myUrlMapping:addUrlPatterns("org.mozilla.firefox", {
 })
 myUrlMapping:addUrlPatterns("com.google.Chrome", {
+  "citrixaccess.va.gov",
+  "caseflowdemo.com",
+})
+myUrlMapping:addUrlPatterns("com.microsoft.edgemac", {
+  "coderpad.io",
+  "app.zenhub.com",
+  "app.circleci.com",
+  "caseflow.statuspage.io",
+  ".*amazonaws-us-gov.com",
+  "dsva.slack.com",
+  "github.com",
   "google.com",
   ".*%.gle",
-  "citrixaccess.va.gov",
   "sentry.ds.va.gov",
   "app.datadoghq.com",
-  "www.getclockwise.com",
-  "coderpad.io",
   "hire.lever.co",
   "www.tms.va.gov",
   "airtable.com",
@@ -41,10 +44,10 @@ myUrlMapping:addUrlPatterns("com.google.Chrome", {
   ".*%.pagerduty%.com",
   ".*%.newrelic%.com",
   ".*%.va%.gov",
-  "caseflowdemo.com",
   "app.retrium.com",
   "latticehq.com",
-  "hackmd.io"
+  "hackmd.io",
+  "notion.so"
 })
 myUrlMapping:addUrlPatterns("us.zoom.xos", { "zoom.us" })
 

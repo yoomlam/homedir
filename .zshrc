@@ -210,6 +210,11 @@ bindkey '\M-.' insert-last-word
 
 [ -f ~/.fzf.zsh ] && source ~/.fzf.zsh
 
+sup(){
+	conda_
+	python3 ~/bin/clickup-export.py | pbcopy
+}
+
 java(){
 	echo "(lazy loading) Enabling SDKMAN"
 	sdkman
