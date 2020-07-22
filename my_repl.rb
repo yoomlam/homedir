@@ -134,7 +134,7 @@ end
 
 ## === TaskTreeRender ===========================
 
-treee = {
+$treee = {
   renderer: TaskTreeRenderModule.global_renderer,
   attrs: TaskTreeRenderModule.global_renderer.config.default_atts,
   config: TaskTreeRenderModule.global_renderer.config
@@ -146,14 +146,41 @@ end
 
 def treee_attrs(*atts)
   TaskTreeRenderModule.global_renderer.config.tap do |conf|
-    conf.default_atts = atts
+    conf.default_atts = *atts
   end
 end
 
 def treee_add_attrs(*atts)
-  treee_attrs(treee.attrs + atts)
+  treee_attrs($treee[:attrs] + atts)
 end
 
+## === AWS helpers ============================
+
+# copy_to_s3("/opt/caseflow-certification/src/hearings2.csv", "temp/hearings2.csv", bucket_name: "dsva-appeals-caseflow-prod")
+def copy_to_s3(filepath, filename, bucket_name: Rails.application.config.s3_bucket_name)
+  Aws.config.update(region: "us-gov-west-1")
+  $s3_client = Aws::S3::Client.new unless $s3_client
+  $s3_resource = Aws::S3::Resource.new(client: $s3_client) unless $s3_resource
+  bucket = $s3_resource.bucket(bucket_name)
+
+  bucket.object(filename).upload_file(filepath, acl: "private", server_side_encryption: "AES256")
+end
+
+## === query helpers ============================
+
+def groupby_date(query, period: 'month', column: 'updated_at')
+  query.group("DATE_TRUNC('#{period}', #{column})").count.sort_by{|key, v| key ? key : Time.utc(1900)}.to_h
+end
+
+def groupby_date_string(query, ftime: '%Y-%m', column: 'updated_at')
+  query.group_by{|h| "#{h[column]&.strftime(ftime)}"}.map{|k,v| [k,v.size]}.to_h.sort_by{|key, v| key}.to_h
+end
+
+def barchart(query, column: 'updated_at', tick: '*')
+  query.order(column).map { |u| u[column]&.strftime('%Y-%m') }.reduce(Hash.new(0)) { |a, b|
+    a[b] = a.keys.include?(b) ? a[b] + "-" : "-"; a
+  }
+end
 ## === helper methods ============================
 
 def uuid?(uuid)
