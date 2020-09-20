@@ -197,11 +197,6 @@ urlHandler:start()
 --- Window management
 require('win-switcher')
 
-require('win-expose')
-hs.hotkey.bind(hypershift, HS_EXPOSE_ModalKey, 'Expose', function() expose:toggleShow() end)
-hs.hotkey.bind('ctrl-cmd-shift','k','App Expose',function() expose_app:toggleShow() end)
--- hs.hotkey.bind('ctrl-cmd','j','Expose',function()expose:toggleShow()end)
-
 require('menubar')
 
 -------------------------------------------------
