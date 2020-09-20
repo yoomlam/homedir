@@ -30,8 +30,8 @@ WSELECT_MODAL:bind("shift", "down",  nil, nudgeDown, nudgeDown, nudgeDown)
 
 ---=== Non-modal versions (for navigation speed)
 --- Move window to other screen
-WSELECT_MODAL:bind("shift", "[", nil, function() ww:moveToScreen("left") end)
-WSELECT_MODAL:bind("shift", "]", nil, function() ww:moveToScreen("right") end)
+-- WSELECT_MODAL:bind("shift", "[", nil, function() ww:moveToScreen("left") end)
+-- WSELECT_MODAL:bind("shift", "]", nil, function() ww:moveToScreen("right") end)
 
 -- local function resize(deltaX, deltaY)
 --   local window = hs.window.focusedWindow()
@@ -53,15 +53,15 @@ local function resizeRight() ww:stepResize("right") end
 local function resizeUp()    ww:stepResize("up"   ) end
 local function resizeDown()  ww:stepResize("down" ) end
 
-WSELECT_MODAL:bind("cmd-shift", "j", nil, resizeLeft, resizeLeft, resizeLeft)
-WSELECT_MODAL:bind("cmd-shift", "l", nil, resizeRight, resizeRight, resizeRight)
-WSELECT_MODAL:bind("cmd-shift", "i", nil, resizeUp, resizeUp, resizeUp)
-WSELECT_MODAL:bind("cmd-shift", "k", nil, resizeDown, resizeDown, resizeDown)
+WSELECT_MODAL:bind("alt-shift", "j", nil, resizeLeft, resizeLeft, resizeLeft)
+WSELECT_MODAL:bind("alt-shift", "l", nil, resizeRight, resizeRight, resizeRight)
+WSELECT_MODAL:bind("alt-shift", "i", nil, resizeUp, resizeUp, resizeUp)
+WSELECT_MODAL:bind("alt-shift", "k", nil, resizeDown, resizeDown, resizeDown)
 
-WSELECT_MODAL:bind("cmd-shift", "left",  nil, resizeLeft, resizeLeft, resizeLeft)
-WSELECT_MODAL:bind("cmd-shift", "right", nil, resizeRight, resizeRight, resizeRight)
-WSELECT_MODAL:bind("cmd-shift", "up",    nil, resizeUp, resizeUp, resizeUp)
-WSELECT_MODAL:bind("cmd-shift", "down",  nil, resizeDown, resizeDown, resizeDown)
+WSELECT_MODAL:bind("alt-shift", "left",  nil, resizeLeft, resizeLeft, resizeLeft)
+WSELECT_MODAL:bind("alt-shift", "right", nil, resizeRight, resizeRight, resizeRight)
+WSELECT_MODAL:bind("alt-shift", "up",    nil, resizeUp, resizeUp, resizeUp)
+WSELECT_MODAL:bind("alt-shift", "down",  nil, resizeDown, resizeDown, resizeDown)
 
 
 --==== Moving across spaces uses 'ctrl'
@@ -110,15 +110,30 @@ WSELECT_MODAL:bind("shift", "i", function() lunetteExec("topHalf") end)
 WSELECT_MODAL:bind("shift", "k", function() lunetteExec("bottomHalf") end)
 WSELECT_MODAL:bind("shift", ",", function() lunetteExec("bottomHalf") end)
 
+hs.hotkey.bind(hypershift, "j",   "Snap left",  nil, function() lunetteExec("leftHalf") end)
+hs.hotkey.bind(hypershift, ";", "Snap center",  nil, function() lunetteExec("center") end)
+hs.hotkey.bind(hypershift, "l",  "Snap right",  nil, function() lunetteExec("rightHalf") end)
+hs.hotkey.bind(hypershift, "i",    "Snap top",  nil, function() lunetteExec("topHalf") end)
+hs.hotkey.bind(hypershift, "k", "Snap bottom",  nil, function() lunetteExec("bottomHalf") end)
+hs.hotkey.bind(hypershift, ",", "Snap bottom",  nil, function() lunetteExec("bottomHalf") end)
+
 WSELECT_MODAL:bind("shift", "u", function() lunetteExec("topLeft") end)
 WSELECT_MODAL:bind("shift", "m", function() lunetteExec("bottomLeft") end)
 WSELECT_MODAL:bind("shift", "o", function() lunetteExec("topRight") end)
 WSELECT_MODAL:bind("shift", ".", function() lunetteExec("bottomRight") end)
 
+hs.hotkey.bind(hypershift, "u",     "Snap topLeft",  nil, function() lunetteExec("topLeft") end)
+hs.hotkey.bind(hypershift, "m",  "Snap bottomLeft",  nil, function() lunetteExec("bottomLeft") end)
+hs.hotkey.bind(hypershift, "o",    "Snap topRight",  nil, function() lunetteExec("topRight") end)
+hs.hotkey.bind(hypershift, ".", "Snap bottomRight",  nil, function() lunetteExec("bottomRight") end)
+
 WSELECT_MODAL:bind("shift", "-", function() lunetteExec("shrink") end)
 WSELECT_MODAL:bind("shift", "=", function() lunetteExec("enlarge") end)
 WSELECT_MODAL:bind("shift", "n", function() lunetteExec("shrink") end)
 WSELECT_MODAL:bind("shift", "h", function() lunetteExec("enlarge") end)
+
+hs.hotkey.bind(hypershift, "n",  "Shrink",  nil, function() lunetteExec("shrink") end)
+hs.hotkey.bind(hypershift, "h", "Enlarge",  nil, function() lunetteExec("enlarge") end)
 
 WSELECT_MODAL:bind("shift", "return", function() lunetteExec("fullScreen") end)
 
@@ -139,7 +154,7 @@ local function toggleShade()
   if not frameDimsTab[win:id()] or not frameDimsTab[win:id()].isSmall then
     frameDimsTab[win:id()]=f:copy()
     frameDimsTab[win:id()].isSmall=true
-    f.h = 50
+    f.h = 10
     -- print(win:application():name().." "..shadeHeightTab[win:application():name()])
     if win:application() and shadeHeightTab[win:application():name()] then
       f.h = shadeHeightTab[win:application():name()]
@@ -152,6 +167,6 @@ local function toggleShade()
 end
 
 WSELECT_MODAL:bind("shift", "space", "Shade window", toggleShade)
-hs.hotkey.bind(ctrlcmdshift, "space", "Shade window", toggleShade)
+hs.hotkey.bind({'cmd','option'}, "space", "Shade window", toggleShade)
 
 

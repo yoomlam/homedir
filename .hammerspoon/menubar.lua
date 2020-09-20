@@ -115,7 +115,7 @@ local function layoutCurrentScreen()
     print("Cannot determine desired layout: "..hs.inspect(windows))
   end
 end
-hs.hotkey.bind(hyper, "l", nil, layoutCurrentScreen)
+hs.hotkey.bind(hyper, "7", nil, layoutCurrentScreen)
 
 -- Do not make layoutMenu `local` to avoid garbage collection
 layoutMenu = hs.menubar.new()

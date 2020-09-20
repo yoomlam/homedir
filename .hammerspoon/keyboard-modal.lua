@@ -60,6 +60,10 @@ function obj:newModal(flags, key, enterMsg, enterMsgDuration, showChooserFunc)
 
   local modal=hs.hotkey.modal.new(flags, key)
   function modal:entered()
+    if obj.currentModal then
+      exitModal(obj.currentModal)
+    end
+
     obj.currentModal=self
     modalMsgUuid=hs.alert.show(enterMsg, enterMsgDuration)
     enteredModal(self)

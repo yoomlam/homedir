@@ -97,24 +97,32 @@ function addToAppModals(flags, key, appName)
   APPS_SELECT_MODAL:bind(flags, key, "Select "..appName, function() apps:showAppChooser(appName) end)
 end
 
-addToAppModals(nil, "x", "iTerm")
+addToAppModals(nil, "x", "net.kovidgoyal.kitty") -- iTerm
+addToAppModals(nil, "a", "Microsoft Edge")
 addToAppModals(nil, "s", "Safari")
 addToAppModals(nil, "f", "Firefox")
 addToAppModals(nil, "g", "Google Chrome")
 addToAppModals(nil, "t", "Sublime Text")
 
-table.insert( appChoices, { text="n", subText="mdNotes (Sublime ~/Documents/mdNotes)",
-  execCommand="~/bin/subl ~/Documents/mdNotes/" } )
-APPS_LAUNCH_MODAL:bind(nil, 'n', "mdNotes", function()
-  exitModal()
-  executeCommand("~/bin/subl ~/Documents/mdNotes/")
-end)
+-- table.insert( appChoices, { text="n", subText="mdNotes (Sublime ~/Documents/mdNotes)",
+--   execCommand="~/bin/subl ~/Documents/mdNotes/" } )
+-- APPS_LAUNCH_MODAL:bind(nil, 'n', "mdNotes", function()
+--   exitModal()
+--   executeCommand("~/bin/subl ~/Documents/mdNotes/")
+-- end)
 
 table.insert( appChoices, { text="h", subText="~/.hammerspoon (Sublime ~/.hammerspoon/)",
   execCommand="~/bin/subl ~/.hammerspoon/" } )
 APPS_LAUNCH_MODAL:bind(nil, 'h', "hammerspoon", function()
   exitModal()
   executeCommand("~/bin/subl ~/.hammerspoon/")
+end)
+
+table.insert( appChoices, { text="r", subText=".my_repl.rb (Sublime ~/.my_homedir/my_repl.rb)",
+  execCommand="~/bin/subl ~/.my_homedir/my_repl.rb" } )
+APPS_LAUNCH_MODAL:bind(nil, 'r', "my_repl.rb", function()
+  exitModal()
+  executeCommand("~/bin/subl ~/.my_homedir/my_repl.rb")
 end)
 
 --- Countdown progress bar
@@ -133,8 +141,8 @@ APPS_SELECT_MODAL:bind(nil, 'e', "Select URL", urlChooser.showUrlChooser)
 --- Paste clip
 local clipPaster=require('paste-clip')
 table.insert( appChoices, {text="v", subText="Clip chooser"} )
-APPS_LAUNCH_MODAL:bind(nil, 'v', "Select URL", clipPaster.showClipChooser)
-APPS_SELECT_MODAL:bind(nil, 'v', "Select URL", clipPaster.showClipChooser)
+APPS_LAUNCH_MODAL:bind(nil, 'v', "Select Snippets", clipPaster.showClipChooser)
+APPS_SELECT_MODAL:bind(nil, 'v', "Select Snippets", clipPaster.showClipChooser)
 
 --- Use modal mode for window selection/navigation
 WSELECT_MODAL = kbModal:newModal(hypershift, WIN_SELECT_ModalKey, "🌬 Window Layout mode")
@@ -156,11 +164,11 @@ local function bindExecuteCommand(modifiers, key, cmd)
 end
 
 print("== Application key bindings:")
-hs.hotkey.bind(ctrlcmd, "i", function() apps:newWindow("iTerm") end)
+-- hs.hotkey.bind(ctrlcmd, "i", function() apps:newWindow("iTerm") end)
 hs.hotkey.bind(ctrlcmd, "x", function() apps:cmdN("net.kovidgoyal.kitty", "/usr/local/bin/kitty -d=$HOME &") end)
 hs.hotkey.bind(ctrlcmdshift, "x", function() executeCommand("/usr/local/bin/kitty -d=$HOME &") end)
 bindExecuteCommand(ctrlcmd, "p", "open -a Screenshot")
-bindExecuteCommand(ctrlcmd, "m", "open -a 'Mission Control'")
+-- bindExecuteCommand(ctrlcmd, "m", "open -a 'Mission Control'")
 bindExecuteCommand("alt-shift", "z", "pmset displaysleepnow")
 -- hs.hotkey.bind(ctrlcmd, "s", )
 

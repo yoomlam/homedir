@@ -44,6 +44,7 @@ myUrlMapping:addUrlPatterns("com.microsoft.edgemac", {
   ".*%.pagerduty%.com",
   ".*%.newrelic%.com",
   ".*%.va%.gov",
+  "compute.internal",
   "app.retrium.com",
   "latticehq.com",
   "hackmd.io",

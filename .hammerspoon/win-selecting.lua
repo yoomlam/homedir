@@ -29,22 +29,23 @@ hs.hotkey.bind(hyper, "k",     "Focus down",  nil, function() hs.window.focusedW
 function moveOneSpace(direction)
     -- rely on setting this in MacOS: System Preferences > Keyboard > Shortcuts > Mission Control
     if direction == "left" then
-        hs.eventtap.keyStroke(hypershift, "[")
+        hs.eventtap.keyStroke(hyper, "u")
     else
-        hs.eventtap.keyStroke(hypershift, "]")
+        hs.eventtap.keyStroke(hyper, "o")
     end
 end
 
 ---=== Modal versions
+WSELECT_MODAL:bind(nil, "u",        "going to space left", function() moveOneSpace("left") end)
+WSELECT_MODAL:bind(nil, "o",        "going to space right", function() moveOneSpace("right") end)
 WSELECT_MODAL:bind("ctrl", "u",     "going to space left", function() moveOneSpace("left") end)
 WSELECT_MODAL:bind("ctrl", "o",     "going to space right", function() moveOneSpace("right") end)
 WSELECT_MODAL:bind("ctrl", "left",  "going to space left", function() moveOneSpace("left") end)
 WSELECT_MODAL:bind("ctrl", "right", "going to space right", function() moveOneSpace("right") end)
 
 ---=== Non-modal versions (for navigation speed)
-hs.hotkey.bind(hyper, "u",     nil, function() moveOneSpace("left") end)
-hs.hotkey.bind(hyper, "o",     nil, function() moveOneSpace("right") end)
-
+hs.hotkey.bind(ctrlcmd, "u",     nil, function() moveOneSpace("left") end)
+hs.hotkey.bind(ctrlcmd, "o",     nil, function() moveOneSpace("right") end)
 hs.hotkey.bind(ctrlcmd, "left",  nil, function() moveOneSpace("left") end)
 hs.hotkey.bind(ctrlcmd, "right", nil, function() moveOneSpace("right") end)
 
