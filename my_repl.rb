@@ -32,7 +32,8 @@ end
 
 def tiny_prompt
   sql_off
-  tiny_prompt=proc { "\001\e[0;35m\002> \001\e[0m\002" }
+  # tiny_prompt=proc { "\001\e[0;35m\002> \001\e[0m\002" }
+  tiny_prompt = proc { "" }
   pry({ prompt: tiny_prompt })
 end
 # def no_prompt
@@ -151,7 +152,7 @@ def treee_attrs(*atts)
 end
 
 def treee_add_attrs(*atts)
-  treee_attrs($treee[:attrs] + atts)
+  treee_attrs(*($treee[:attrs] + atts))
 end
 
 ## === AWS helpers ============================
@@ -168,12 +169,20 @@ end
 
 ## === query helpers ============================
 
+# find Post which has more than one Comments:
+# Post.joins(:comments).group('posts.id').having('count(comments.id) > ?', 1)
+# Appeal.active.where(aod_reason: nil).joins(claimants: :person).where("people.date_of_birth <= ?", 75.years.ago)
+
+# cs=Claimant.joins(:person).where("people.date_of_birth <= ?", 75.years.ago).where(decision_review_type: :Appeal)
+# cs.group(:type).count
+
 def groupby_date(query, period: 'month', column: 'updated_at')
   query.group("DATE_TRUNC('#{period}', #{column})").count.sort_by{|key, v| key ? key : Time.utc(1900)}.to_h
 end
 
 def groupby_date_string(query, ftime: '%Y-%m', column: 'updated_at')
-  query.group_by{|h| "#{h[column]&.strftime(ftime)}"}.map{|k,v| [k,v.size]}.to_h.sort_by{|key, v| key}.to_h
+  # query.group_by{|h| "#{h[column]&.strftime(ftime)}"}.map{|k,v| [k,v.size]}.to_h.sort_by{|key, v| key}.to_h
+  query.group_by{|h| "#{h[column]&.strftime(ftime)}"}.transform_values(&:count).sort_by{|key, v| key}.to_h
 end
 
 def barchart(query, column: 'updated_at', tick: '*')
@@ -181,6 +190,7 @@ def barchart(query, column: 'updated_at', tick: '*')
     a[b] = a.keys.include?(b) ? a[b] + "-" : "-"; a
   }
 end
+
 ## === helper methods ============================
 
 def uuid?(uuid)
@@ -228,7 +238,7 @@ end
 # user 3
 # user "BvaAAbshire"
 # user 'ABS'
-def user(id)
+def user_(id)
   user=User.find(id) if id.is_a? Numeric
   return user if user
 
@@ -243,8 +253,8 @@ def user(id)
   puts "Found #{users.count} users with full_name like %#{id.upcase}%: #{users.map{|u| [u.css_id, u.full_name]}}"
 end
 
-def staff(id)
-	return VACOLS:Staff.find_by(sdomainid: id.css_id) if id.is_a? User
+def staff_(id)
+	return VACOLS::Staff.find_by(sdomainid: id.css_id) if id.is_a? User
 
 	staff=VACOLS::Staff.find_by(slogid: id.upcase)
 	return staff if staff
@@ -285,7 +295,7 @@ end
 
 # appeal "1c11a1ae-43bd-449b-9416-7ccb9cb06c11"
 # appeal 1234567
-def appeal(obj)
+def appeal_(obj)
   appeal = obj if obj.is_a?(Appeal) || obj.is_a?(LegacyAppeal)
   appeal = uuid?(obj) ? Appeal.find_by(uuid: obj) : LegacyAppeal.find_by(vacols_id: obj) if appeal.nil?
 end
@@ -323,6 +333,10 @@ def p_appeal(appeal)
       decs.each{|doc| puts "  #{doc&.inspect}"}
     end
 
+    puts "---- Legacy appeals for vet "
+    decision_revew=appeal
+    decision_revew.serialized_legacy_appeals
+
     appeal
   end
 end
@@ -341,7 +355,8 @@ def p_legacy_appeal(appeal)
 
     puts "---- Prior Locations"
     puts "changed_at, change_to, changed_by, prior_loc"
-    pp appeal.location_history.pluck(:locdout, :locstto, :locstrcv, :locstout)
+    # pp appeal.location_history.pluck(:locdout, :locstto, :locstrcv, :locstout)
+    pp appeal.location_history.map(&:summary)
     puts "^^^^^^^^^^^^^^^^^^^^"
     tasks
   end
@@ -371,7 +386,7 @@ end
 
 ## === Hearing ===================================
 
-def hearing(id)
+def hearing_(id)
   Hearing.find_hearing_by_uuid_or_vacols_id(id)
 end
 
@@ -392,6 +407,10 @@ def p_legacy_hearing(hearing)
 end
 
 ## === RequestIssue ================================
+
+# https://github.com/department-of-veterans-affairs/caseflow/wiki/Intake-Structure-Renderer
+IntakeRenderer.patch_intake_classes
+# puts decision_review.render_intake
 
 def p_request_issues(ris)
   quietly do
