@@ -38,8 +38,7 @@ end
 
 -- end
 
-local function buildChoices(appName)
-  local wins=hs.window.filter.new{appName}:getWindows()
+function obj:buildChoicesFromWindows(wins)
   -- print(hs.inspect(wins))
   local choices = {}
   for k, win in pairs(wins) do
@@ -56,30 +55,44 @@ local function buildChoices(appName)
   return choices
 end
 
+local function buildChoices(appName)
+  local wins=hs.window.filter.new{appName}:getWindows()
+  return obj:buildChoicesFromWindows(wins)
+end
+
+local function selectWindowViaMenu(choice)
+  local app=hs.application.find(choice['appName'])
+  if app then
+    app:selectMenuItem({"Window", choice['title']})
+    return app:activate()
+  else
+    return nil
+  end
+end
+
 local function raiseWindow(choice)
   if choice then
     print(hs.inspect(choice))
     local win=hs.window.get(choice['winId'])
+    if not win then
+      win=hs.window.get(choice['title'])
+    end
+
     if win then
       win:raise()
       win:focus()
     else
       local found=selectWindowViaMenu(choice)
+      print("Could not look up window; searched by application: "..tostring(found))
       if not found then
         -- FIXME: doesn't work for iTerm2
-        hs.alert.show("Cannot find "..tostring(choice['winId']), 4)
+        hs.alert.show("Cannot find winId: "..tostring(choice['winId']), 4)
       end
     end
   end
 end
 
-local function selectWindowViaMenu(choice)
-  local app=hs.application.find(choice['appName'])
-  -- needed? app:activate()
-  return app:selectMenuItem({"Window", choice['title']})
-end
-
-function obj:showAppChooser(appName, KEY_FUNC_MAP)
+function obj:showAppChooser(appName, KEY_FUNC_MAP, choices)
   exitModal()
   local chooser=hs.chooser.new(function(choice)
     if choice then
@@ -90,7 +103,12 @@ function obj:showAppChooser(appName, KEY_FUNC_MAP)
       end
     end
   end)
-  chooser:choices(buildChoices(appName))
+
+  if not choices then
+    choices=buildChoices(appName)
+  end
+
+  chooser:choices(choices)
   chooser:show()
 end
 

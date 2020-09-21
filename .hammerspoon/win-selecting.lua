@@ -48,6 +48,8 @@ hs.hotkey.bind(ctrlcmd, "u",     nil, function() moveOneSpace("left") end)
 hs.hotkey.bind(ctrlcmd, "o",     nil, function() moveOneSpace("right") end)
 hs.hotkey.bind(ctrlcmd, "left",  nil, function() moveOneSpace("left") end)
 hs.hotkey.bind(ctrlcmd, "right", nil, function() moveOneSpace("right") end)
+hs.hotkey.bind(hyper,   "left",  nil, function() moveOneSpace("left") end)
+hs.hotkey.bind(hyper,   "right", nil, function() moveOneSpace("right") end)
 
 
 --==== Expose
@@ -55,10 +57,10 @@ require('win-expose')
 -- hs.hotkey.bind(hypershift, HS_EXPOSE_ModalKey, 'Expose', function() expose:toggleShow() end)
 -- hs.hotkey.bind('ctrl-cmd-shift','k','App Expose',function() expose_app:toggleShow() end)
 -- hs.hotkey.bind('ctrl-cmd','j','Expose',function()expose:toggleShow()end)
-WSELECT_MODAL:bind(nil, "e", 'Expose all',  function() expose:toggleShow() end)
-WSELECT_MODAL:bind(nil, "a", 'Expose this app', function() expose_app:toggleShow() end)
-WSELECT_MODAL:bind(nil, "s", 'Expose this space', function() expose_space:toggleShow() end)
-WSELECT_MODAL:bind(nil, "b", 'Expose browsers', function() expose_browsers:toggleShow() end)
+WSELECT_MODAL:bind(nil, "e", 'Expose all',        function() exitModal(); expose:toggleShow() end)
+WSELECT_MODAL:bind(nil, "a", 'Expose this app',   function() exitModal(); expose_app:toggleShow() end)
+WSELECT_MODAL:bind(nil, "s", 'Expose this space', function() exitModal(); expose_space:toggleShow() end)
+WSELECT_MODAL:bind(nil, "b", 'Expose browsers',   function() exitModal(); expose_browsers:toggleShow() end)
 
 --====  Focused window border
 local global_border = nil

@@ -9,15 +9,15 @@ switcher.ui.fontName = ".AppleSystemUIFont"
 switcher_all = switcher.new(hs.window.filter.new():setCurrentSpace(nil), {
 	showSelectedThumbnail = true,
 })
-hs.hotkey.bind(ctrlcmd,      'tab',function()switcher_all:next()end)
-hs.hotkey.bind(ctrlcmdshift, 'tab',function()switcher_all:previous()end)
+hs.hotkey.bind('option',      'tab',function()switcher_all:next()end)
+hs.hotkey.bind('option-shift', 'tab',function()switcher_all:previous()end)
 
 -- Current space only
 switcher_space = switcher.new(CURR_SPACE_WINFILTER, {
 	showSelectedThumbnail = true,
 })
-hs.hotkey.bind('option','tab',function()switcher_space:next()end)
-hs.hotkey.bind('option-shift','tab',function()switcher_space:previous()end)
+hs.hotkey.bind(ctrlcmd,'tab',function()switcher_space:next()end)
+hs.hotkey.bind(ctrlcmdshift,'tab',function()switcher_space:previous()end)
 
 -- specialized switcher for your dozens of browser windows :)
 switcher_browsers = switcher.new({'Safari','Google Chrome','Firefox'}, {

@@ -53,15 +53,15 @@ local function resizeRight() ww:stepResize("right") end
 local function resizeUp()    ww:stepResize("up"   ) end
 local function resizeDown()  ww:stepResize("down" ) end
 
-WSELECT_MODAL:bind("alt-shift", "j", nil, resizeLeft, resizeLeft, resizeLeft)
-WSELECT_MODAL:bind("alt-shift", "l", nil, resizeRight, resizeRight, resizeRight)
-WSELECT_MODAL:bind("alt-shift", "i", nil, resizeUp, resizeUp, resizeUp)
-WSELECT_MODAL:bind("alt-shift", "k", nil, resizeDown, resizeDown, resizeDown)
+WSELECT_MODAL:bind("option", "j", nil, resizeLeft, resizeLeft, resizeLeft)
+WSELECT_MODAL:bind("option", "l", nil, resizeRight, resizeRight, resizeRight)
+WSELECT_MODAL:bind("option", "i", nil, resizeUp, resizeUp, resizeUp)
+WSELECT_MODAL:bind("option", "k", nil, resizeDown, resizeDown, resizeDown)
 
-WSELECT_MODAL:bind("alt-shift", "left",  nil, resizeLeft, resizeLeft, resizeLeft)
-WSELECT_MODAL:bind("alt-shift", "right", nil, resizeRight, resizeRight, resizeRight)
-WSELECT_MODAL:bind("alt-shift", "up",    nil, resizeUp, resizeUp, resizeUp)
-WSELECT_MODAL:bind("alt-shift", "down",  nil, resizeDown, resizeDown, resizeDown)
+WSELECT_MODAL:bind("option", "left",  nil, resizeLeft, resizeLeft, resizeLeft)
+WSELECT_MODAL:bind("option", "right", nil, resizeRight, resizeRight, resizeRight)
+WSELECT_MODAL:bind("option", "up",    nil, resizeUp, resizeUp, resizeUp)
+WSELECT_MODAL:bind("option", "down",  nil, resizeDown, resizeDown, resizeDown)
 
 
 --==== Moving across spaces uses 'ctrl'

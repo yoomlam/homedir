@@ -48,13 +48,13 @@ hs.hotkey.bind('ctrl', 'down', nil,
 -- print(hs.inspect(hs.keycodes.map))
 local ENTITIES_ModalKey   = 'pad-'
 local SELECT_ModalKey     = 'pad+'
-local WIN_SELECT_ModalKey = "pad1"
+local WINDOWING_ModalKey = "pad1"
 local HS_EXPOSE_ModalKey  = "pad5"
 --- double tap a modifier key to send a keystroke, such as to enable a modal
 require('doubletap-flag'):start({
     {{"shift"}, {hypershift, SELECT_ModalKey}},
     {{"cmd"},   {hypershift, ENTITIES_ModalKey}},
-    {{"ctrl"},  {hypershift, WIN_SELECT_ModalKey}},
+    {{"ctrl"},  {hypershift, WINDOWING_ModalKey}},
     {{"alt"},   {hypershift, HS_EXPOSE_ModalKey}},
 })
 
@@ -97,7 +97,7 @@ function addToAppModals(flags, key, appName)
   APPS_SELECT_MODAL:bind(flags, key, "Select "..appName, function() apps:showAppChooser(appName) end)
 end
 
-addToAppModals(nil, "x", "net.kovidgoyal.kitty") -- iTerm
+addToAppModals(nil, "x", "kitty") -- net.kovidgoyal.kitty; iTerm
 addToAppModals(nil, "a", "Microsoft Edge")
 addToAppModals(nil, "s", "Safari")
 addToAppModals(nil, "f", "Firefox")
@@ -125,6 +125,13 @@ APPS_LAUNCH_MODAL:bind(nil, 'r', "my_repl.rb", function()
   executeCommand("~/bin/subl ~/.my_homedir/my_repl.rb")
 end)
 
+--- textual window chooser
+table.insert( appChoices, {text="q", subText="Window chooser"} )
+APPS_SELECT_MODAL:bind(nil, 'q', "Select Window", function()
+  local wins=hs.window.filter.new():getWindows()
+  apps:showAppChooser(nil, nil, apps:buildChoicesFromWindows(wins))
+end)
+
 --- Countdown progress bar
 local countdown=require('choose-countdown')
 table.insert( appChoices, {text="c", subText="Countdown", funcKey='countdown'} )
@@ -145,7 +152,9 @@ APPS_LAUNCH_MODAL:bind(nil, 'v', "Select Snippets", clipPaster.showClipChooser)
 APPS_SELECT_MODAL:bind(nil, 'v', "Select Snippets", clipPaster.showClipChooser)
 
 --- Use modal mode for window selection/navigation
-WSELECT_MODAL = kbModal:newModal(hypershift, WIN_SELECT_ModalKey, "🌬 Window Layout mode")
+local winLayoutTips="\n⇧ = snap (or nudge with arrows)\n⌥ = resize\n⌃⇧ = move to space"
+
+WSELECT_MODAL = kbModal:newModal(hypershift, WINDOWING_ModalKey, "🌬 Window Layout mode"..winLayoutTips)
 require('win-selecting')
 require('win-moving')
 
