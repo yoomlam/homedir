@@ -4,21 +4,21 @@
 ---=== Modal versions
 --- Change focus
 -- http://www.hammerspoon.org/docs/hs.window.html#focusWindowEast
-WSELECT_MODAL:bind(nil, "j",     "Focus left",  nil, function() hs.window.focusedWindow():focusWindowWest (CURR_SPACE_WINFILTER:getWindows(), false, false) end)
-WSELECT_MODAL:bind(nil, "l",     "Focus right", nil, function() hs.window.focusedWindow():focusWindowEast (CURR_SPACE_WINFILTER:getWindows(), false, false) end)
-WSELECT_MODAL:bind(nil, "i",     "Focus up",    nil, function() hs.window.focusedWindow():focusWindowNorth(CURR_SPACE_WINFILTER:getWindows(), false, false) end)
-WSELECT_MODAL:bind(nil, "k",     "Focus down",  nil, function() hs.window.focusedWindow():focusWindowSouth(CURR_SPACE_WINFILTER:getWindows(), false, false) end)
-WSELECT_MODAL:bind(nil, "left",  "Focus left",  nil, function() hs.window.focusedWindow():focusWindowWest (CURR_SPACE_WINFILTER:getWindows(), false, false) end)
-WSELECT_MODAL:bind(nil, "right", "Focus right", nil, function() hs.window.focusedWindow():focusWindowEast (CURR_SPACE_WINFILTER:getWindows(), false, false) end)
-WSELECT_MODAL:bind(nil, "up",    "Focus up",    nil, function() hs.window.focusedWindow():focusWindowNorth(CURR_SPACE_WINFILTER:getWindows(), false, false) end)
-WSELECT_MODAL:bind(nil, "down",  "Focus down",  nil, function() hs.window.focusedWindow():focusWindowSouth(CURR_SPACE_WINFILTER:getWindows(), false, false) end)
+WSELECT_MODAL:bind(nil, "j",     "Focus left",  nil, function() hs.window.focusedWindow():focusWindowWest (CURR_SPACE_WINFILTER:getWindows(), false, true) end)
+WSELECT_MODAL:bind(nil, "l",     "Focus right", nil, function() hs.window.focusedWindow():focusWindowEast (CURR_SPACE_WINFILTER:getWindows(), false, true) end)
+WSELECT_MODAL:bind(nil, "i",     "Focus up",    nil, function() hs.window.focusedWindow():focusWindowNorth(CURR_SPACE_WINFILTER:getWindows(), false, true) end)
+WSELECT_MODAL:bind(nil, "k",     "Focus down",  nil, function() hs.window.focusedWindow():focusWindowSouth(CURR_SPACE_WINFILTER:getWindows(), false, true) end)
+-- WSELECT_MODAL:bind(nil, "left",  "Focus left",  nil, function() hs.window.focusedWindow():focusWindowWest (CURR_SPACE_WINFILTER:getWindows(), false, true) end)
+-- WSELECT_MODAL:bind(nil, "right", "Focus right", nil, function() hs.window.focusedWindow():focusWindowEast (CURR_SPACE_WINFILTER:getWindows(), false, true) end)
+-- WSELECT_MODAL:bind(nil, "up",    "Focus up",    nil, function() hs.window.focusedWindow():focusWindowNorth(CURR_SPACE_WINFILTER:getWindows(), false, true) end)
+-- WSELECT_MODAL:bind(nil, "down",  "Focus down",  nil, function() hs.window.focusedWindow():focusWindowSouth(CURR_SPACE_WINFILTER:getWindows(), false, true) end)
 
 ---=== Non-modal versions (for navigation speed)
 --- Change focus
-hs.hotkey.bind(hyper, "j",     "Focus left",  nil, function() hs.window.focusedWindow():focusWindowWest (CURR_SPACE_WINFILTER:getWindows(), false, false) end)
-hs.hotkey.bind(hyper, "l",     "Focus right", nil, function() hs.window.focusedWindow():focusWindowEast (CURR_SPACE_WINFILTER:getWindows(), false, false) end)
-hs.hotkey.bind(hyper, "i",     "Focus up",    nil, function() hs.window.focusedWindow():focusWindowNorth(CURR_SPACE_WINFILTER:getWindows(), false, false) end)
-hs.hotkey.bind(hyper, "k",     "Focus down",  nil, function() hs.window.focusedWindow():focusWindowSouth(CURR_SPACE_WINFILTER:getWindows(), false, false) end)
+hs.hotkey.bind(hyper, "j",     "Focus left",  nil, function() hs.window.focusedWindow():focusWindowWest (CURR_SPACE_WINFILTER:getWindows(), false, true) end)
+hs.hotkey.bind(hyper, "l",     "Focus right", nil, function() hs.window.focusedWindow():focusWindowEast (CURR_SPACE_WINFILTER:getWindows(), false, true) end)
+hs.hotkey.bind(hyper, "i",     "Focus up",    nil, function() hs.window.focusedWindow():focusWindowNorth(CURR_SPACE_WINFILTER:getWindows(), false, true) end)
+hs.hotkey.bind(hyper, "k",     "Focus down",  nil, function() hs.window.focusedWindow():focusWindowSouth(CURR_SPACE_WINFILTER:getWindows(), false, true) end)
 -- hs.hotkey.bind(hyper, "left",  "Focus left",  nil, function() hs.window.focusedWindow():focusWindowWest (CURR_SPACE_WINFILTER:getWindows(), false, false) end)
 -- hs.hotkey.bind(hyper, "right", "Focus right", nil, function() hs.window.focusedWindow():focusWindowEast (CURR_SPACE_WINFILTER:getWindows(), false, false) end)
 -- hs.hotkey.bind(hyper, "up",    "Focus up",    nil, function() hs.window.focusedWindow():focusWindowNorth(CURR_SPACE_WINFILTER:getWindows(), false, false) end)
@@ -38,10 +38,10 @@ end
 ---=== Modal versions
 WSELECT_MODAL:bind(nil, "u",        "going to space left", function() moveOneSpace("left") end)
 WSELECT_MODAL:bind(nil, "o",        "going to space right", function() moveOneSpace("right") end)
-WSELECT_MODAL:bind("ctrl", "u",     "going to space left", function() moveOneSpace("left") end)
-WSELECT_MODAL:bind("ctrl", "o",     "going to space right", function() moveOneSpace("right") end)
-WSELECT_MODAL:bind("ctrl", "left",  "going to space left", function() moveOneSpace("left") end)
-WSELECT_MODAL:bind("ctrl", "right", "going to space right", function() moveOneSpace("right") end)
+-- WSELECT_MODAL:bind("ctrl", "u",     "going to space left", function() moveOneSpace("left") end)
+-- WSELECT_MODAL:bind("ctrl", "o",     "going to space right", function() moveOneSpace("right") end)
+-- WSELECT_MODAL:bind("ctrl", "left",  "going to space left", function() moveOneSpace("left") end)
+-- WSELECT_MODAL:bind("ctrl", "right", "going to space right", function() moveOneSpace("right") end)
 
 ---=== Non-modal versions (for navigation speed)
 hs.hotkey.bind(ctrlcmd, "u",     nil, function() moveOneSpace("left") end)

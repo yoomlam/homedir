@@ -23,10 +23,15 @@ local function nudgeLeft()  ww:stepMove("left")  end
 local function nudgeRight() ww:stepMove("right") end
 local function nudgeUp()    ww:stepMove("up")    end
 local function nudgeDown()  ww:stepMove("down")  end
-WSELECT_MODAL:bind("shift", "left",  nil, nudgeLeft, nudgeLeft, nudgeLeft)
-WSELECT_MODAL:bind("shift", "right", nil, nudgeRight, nudgeRight, nudgeRight)
-WSELECT_MODAL:bind("shift", "up",    nil, nudgeUp, nudgeUp, nudgeUp)
-WSELECT_MODAL:bind("shift", "down",  nil, nudgeDown, nudgeDown, nudgeDown)
+WSELECT_MODAL:bind("ctrl-shift", "j", nil, nudgeLeft,  nudgeLeft,  nudgeLeft)
+WSELECT_MODAL:bind("ctrl-shift", "l", nil, nudgeRight, nudgeRight, nudgeRight)
+WSELECT_MODAL:bind("ctrl-shift", "i", nil, nudgeUp,    nudgeUp,    nudgeUp)
+WSELECT_MODAL:bind("ctrl-shift", "k", nil, nudgeDown,  nudgeDown,  nudgeDown)
+
+hs.hotkey.bind(ctrlcmdshift, "j", "Nudge left",  nil, nudgeLeft)
+hs.hotkey.bind(ctrlcmdshift, "l", "Nudge right", nil, nudgeRight)
+hs.hotkey.bind(ctrlcmdshift, "i", "Nudge up",    nil, nudgeUp)
+hs.hotkey.bind(ctrlcmdshift, "k", "Nudge down",  nil, nudgeDown)
 
 ---=== Non-modal versions (for navigation speed)
 --- Move window to other screen
@@ -53,15 +58,15 @@ local function resizeRight() ww:stepResize("right") end
 local function resizeUp()    ww:stepResize("up"   ) end
 local function resizeDown()  ww:stepResize("down" ) end
 
-WSELECT_MODAL:bind("option", "j", nil, resizeLeft, resizeLeft, resizeLeft)
+WSELECT_MODAL:bind("option", "j", nil, resizeLeft,  resizeLeft,  resizeLeft)
 WSELECT_MODAL:bind("option", "l", nil, resizeRight, resizeRight, resizeRight)
-WSELECT_MODAL:bind("option", "i", nil, resizeUp, resizeUp, resizeUp)
-WSELECT_MODAL:bind("option", "k", nil, resizeDown, resizeDown, resizeDown)
+WSELECT_MODAL:bind("option", "i", nil, resizeUp,    resizeUp,    resizeUp)
+WSELECT_MODAL:bind("option", "k", nil, resizeDown,  resizeDown,  resizeDown)
 
-WSELECT_MODAL:bind("option", "left",  nil, resizeLeft, resizeLeft, resizeLeft)
-WSELECT_MODAL:bind("option", "right", nil, resizeRight, resizeRight, resizeRight)
-WSELECT_MODAL:bind("option", "up",    nil, resizeUp, resizeUp, resizeUp)
-WSELECT_MODAL:bind("option", "down",  nil, resizeDown, resizeDown, resizeDown)
+-- WSELECT_MODAL:bind("option", "left",  nil, resizeLeft, resizeLeft, resizeLeft)
+-- WSELECT_MODAL:bind("option", "right", nil, resizeRight, resizeRight, resizeRight)
+-- WSELECT_MODAL:bind("option", "up",    nil, resizeUp, resizeUp, resizeUp)
+-- WSELECT_MODAL:bind("option", "down",  nil, resizeDown, resizeDown, resizeDown)
 
 
 --==== Moving across spaces uses 'ctrl'
