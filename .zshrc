@@ -1,7 +1,31 @@
+
+# https://scriptingosx.com/2019/07/moving-to-zsh-part-5-completions/
+
+# Speed up zsh:
+# https://blog.mattclemente.com/2020/06/26/oh-my-zsh-slow-to-load.html#a-note-on-profiling-with-zshzprof
+# https://medium.com/@dannysmith/little-thing-2-speeding-up-zsh-f1860390f92
+# zmodload zsh/zprof
+
+# For detailed trace: zsh -lxv
+
+function startTimer(){
+  timer=$(($(gdate +%s%N)/1000000))
+}
+function echoTimer(){
+  if [ "$timer" ]; then
+    now=$(($(gdate +%s%N)/1000000))
+    elapsed=$(($now-$timer))
+    echo "$PWD $elapsed: $1" >&2
+    timer=$now
+  fi
+}
+# startTimer
+
 # If you come from bash you might have to change your $PATH.
 export PATH=$HOME/bin:$PATH
 # put gnu-getopt first
 export PATH="/usr/local/opt/gnu-getopt/bin:$PATH"
+export PATH="/usr/local/opt/make/libexec/gnubin:$PATH"
 
 # Path to your oh-my-zsh installation.
 export ZSH="$HOME/.oh-my-zsh"
@@ -56,7 +80,7 @@ function precmd () {
 }
 
 # Uncomment the following line to enable command auto-correction.
-ENABLE_CORRECTION="true"
+#ENABLE_CORRECTION="true"
 
 # Uncomment the following line to display red dots whilst waiting for completion.
 COMPLETION_WAITING_DOTS="true"
@@ -78,9 +102,16 @@ HIST_STAMPS="%m/%d %H:%M"
 setopt HIST_EXPIRE_DUPS_FIRST    # Expire duplicate entries first when trimming history.
 setopt HIST_FIND_NO_DUPS         # Do not display a line previously found when searching.
 setopt HIST_REDUCE_BLANKS        # removes blank lines from history
+# http://zsh.sourceforge.net/Doc/Release/Options.html
+setopt HIST_SAVE_NO_DUPS        # When writing out the history file, duplicate are omitted
+#unsetopt EXTENDED_HISTORY       # Save each command’s beginning timestamp
+setopt HIST_IGNORE_ALL_DUPS     # older duplicate command is removed
+setopt HIST_IGNORE_DUPS         # ignore duplicates of the previous event
+setopt HIST_IGNORE_SPACE        # when the first character on the line is a space
+
 
 # http://zsh.sourceforge.net/Doc/Release/Options.html
-setopt CORRECT    # shell will make a guess of what you meant to type and ask whether you want do
+#setopt CORRECT    # shell will make a guess of what you meant to type and ask whether you want do
 
 # Would you like to use another custom folder than $ZSH/custom?
 # ZSH_CUSTOM=/path/to/new-custom-folder
@@ -91,19 +122,20 @@ setopt CORRECT    # shell will make a guess of what you meant to type and ask wh
 # Example format: plugins=(rails git textmate ruby lighthouse)
 # Add wisely, as too many plugins slow down shell startup.
 plugins=(
-	common-aliases
+	# common-aliases
 	history
 	zsh-interactive-cd
-	git
+	# git
 	sublime
-	codeclimate
-	osx
+	#codeclimate
 	# zsh-syntax-highlighting
-	zsh-autosuggestions
-	rbenv
+	# slow: zsh-autosuggestions
+	# slow:	rbenv
 )
+echoTimer "Before oh-my-zsh.sh"
 
 source $ZSH/oh-my-zsh.sh
+echoTimer "After oh-my-zsh.sh"
 
 # User configuration
 
@@ -127,6 +159,7 @@ zle -N down-line-or-local-history
 bindkey "^[[1;5A" up-line-or-history    # [CTRL] + Cursor up
 bindkey "^[[1;5B" down-line-or-history  # [CTRL] + Cursor down
 
+echoTimer "bindkey"
 
 # export MANPATH="/usr/local/man:$MANPATH"
 
@@ -162,7 +195,7 @@ export MY_NOBACKUP=$HOME/NOBACKUP
 if [ -e "$HOME/.my_links/tempDir" ]; then
 	cd -P "$HOME/.my_links/tempDir"
 	export TEMP=`pwd -P`
-	cd -
+	cd - > /dev/null
 fi
 [ "$TEMP" ] || export TEMP="$MY_NOBACKUP/var/tmp"
 # used by mutt
@@ -174,6 +207,7 @@ if [ -z "$MY_TRASH" ] ; then
 	[ -e "$HOME/.my_links" ] && export MY_TRASH=$HOME/.my_links/trashDir
 	[ -e "$MY_TRASH" ] || export MY_TRASH="$TMP"
 fi
+echoTimer "TEMP and MY_TRASH"
 
 
 export CLICOLOR=1
@@ -184,7 +218,6 @@ export XIVIEWER=open
 # don't use pager for git grep
 # see ~/.gitconfig instead: export GIT_PAGER=''
 
-alias c="source autosource"
 alias dateStr='date +%Y-%m-%d-%T'
 source ~/.my_rc/bin/src/funcs.src
 
@@ -192,12 +225,13 @@ alias l='ls -alFh'
 alias lt='ls -altrFh'
 alias du='du -kh'
 alias df='df -kh'
-alias path='echo -e ${PATH//:/\\n}'
+#zsh uses the path variable # alias path='echo -e ${PATH//:/\\n}'
 alias sdkman='source "$HOME/.sdkman.src"'
 
 alias dockr_jupyter='echo "Running on port 8890"; docker run -p 8890:8888 -v `pwd`:/home/jovyan/on_host jupyter/scipy-notebook'
 alias dockr_jupyter_ruby='echo "Running on port 8891"; docker run -p 8891:8888 -v `pwd`:/home/jovyan/on_host rubydata/datascience-notebook'
 source ~/.alias-$HOST
+echoTimer "aliases"
 
 # to hide the “user@hostname” info when you’re logged in as yourself on your local machine
 #prompt_context(){}
@@ -209,10 +243,11 @@ bindkey '\M-.' insert-last-word
 # See kitty.conf: bindkey '\C-.' insert-last-word
 
 [ -f ~/.fzf.zsh ] && source ~/.fzf.zsh
+echoTimer "fzf"
 
 sup(){
 	conda_
-	python3 ~/bin/clickup-export.py | pbcopy
+	python3 ~/bin/clickup-export.py "$@" | pbcopy
 }
 
 java(){
@@ -240,6 +275,13 @@ conda_(){
 	conda env list
 	[ "$1" ] && conda "$@"
 }
+go_(){
+	echo "(lazy loading) Enabling Go lang"
+	source ~/.golangrc
+	echo "(loaded Go lang)"
+	unset -f go_
+	[ "$1" ] && go "$@"
+}
 
 # icu4c is keg-only, which means it was not symlinked into /usr/local,
 # because macOS provides libicucore.dylib (but nothing else).
@@ -259,9 +301,29 @@ conda_(){
 #export GEM_HOME="$HOME/.gem"
 #PATH=$GEM_HOME/bin:$PATH
 
-# https://sw.kovidgoyal.net/kitty/index.html#zsh
-autoload -Uz compinit
-compinit
-# Completion for kitty
-kitty + complete setup zsh | source /dev/stdin
+echoTimer "lazy functions"
 
+# startTimer
+# https://sw.kovidgoyal.net/kitty/index.html#zsh
+# https://gist.github.com/ctechols/ca1035271ad134841284#gistcomment-2308206
+setopt extendedglob
+autoload -Uz compinit
+echoTimer "autoload compinit"
+for dump in ~/.zcompdump(N.mh+24); do
+  compinit
+done
+compinit -C
+echoTimer "compinit"
+
+# Completion for kitty
+# kitty + complete setup zsh | source /dev/stdin
+# echoTimer "autocompletions: kitty"
+
+heroku_(){
+	# heroku autocomplete setup
+	HEROKU_AC_ZSH_SETUP_PATH=/Users/yoomlam/Library/Caches/heroku/autocomplete/zsh_setup && test -f $HEROKU_AC_ZSH_SETUP_PATH && source $HEROKU_AC_ZSH_SETUP_PATH;
+}
+
+echoTimer "Done zshrc"
+
+c

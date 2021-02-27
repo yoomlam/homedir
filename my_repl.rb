@@ -46,6 +46,8 @@ end
 def configure_pry
   puts "  Configuring Pry"
   _set_pry_prompt
+  # Pry.config.pager = false
+  Pry.config.commands.alias_command "hst", "hist --no-numbers"
   $PRY_CONFIGURED=true
 end
 
@@ -72,6 +74,22 @@ def ignore_prefixes(methods)
   methods.reject{|m|
     IGNORED_PREFIXES.any?{|prefix| m.to_s.start_with?(prefix)}
   }
+end
+
+## === Debugging ============================
+
+BACKTRACE_CLEANER = ActiveSupport::BacktraceCleaner.new
+BACKTRACE_CLEANER.add_filter   { |line| line.gsub(Rails.root.to_s, '.') } # strip the Rails.root prefix
+#BACKTRACE_CLEANER.add_silencer { |line| line =~ /gems|\/lib\/|\.rbenv\// } # skiplines
+BACKTRACE_CLEANER.add_silencer { |line| line =~ /\.rbenv\// } # skiplines
+
+def caller_
+  # BACKTRACE_CLEANER.clean(exception.backtrace)
+  BACKTRACE_CLEANER.clean(caller)
+end
+
+def create(*args)
+  FactoryBot.create(*args)
 end
 
 ## === Print tables ===========================
@@ -167,6 +185,18 @@ def copy_to_s3(filepath, filename, bucket_name: Rails.application.config.s3_buck
   bucket.object(filename).upload_file(filepath, acl: "private", server_side_encryption: "AES256")
 end
 
+## === Ruby helpers ============================
+
+def split_into_weeks(time_span)
+  week=time_span.begin..time_span.begin.end_of_week
+  time_periods=[week]
+  while week.begin.next_week.end_of_week < time_span.end do
+    week=week.begin.next_week..week.begin.next_week.end_of_week
+    time_periods << week
+  end
+  time_periods << (week.begin.next_week..(time_span.end-1))
+end
+
 ## === query helpers ============================
 
 # find Post which has more than one Comments:
@@ -204,6 +234,9 @@ def sql_off
 end
 def sql_on
   ActiveRecord::Base.logger.level = $SAVED_LOGGER_LEVEL
+end
+def sql_debug
+  ActiveRecord::Base.logger = Logger.new(STDOUT)
 end
 
 # Suppress SQL queries to reduce console clutter
@@ -277,6 +310,11 @@ def p_user(obj)
     # Can also run this on the command line such as
     # `CSS_ID=BVAAABSHIRE bundle exec rake users:footprint`
     pp UserReporter.new(user.css_id).report
+
+    legacy_cases = VACOLS::Case.where(bfcurloc: user.vacols_user.slogid)
+    puts "Legacy cases assigned to user: #{legacy_cases.count}"
+    pp legacy_cases.pluck(:bfkey)
+
     user
   end
 end
@@ -300,6 +338,8 @@ def appeal_(obj)
   appeal = uuid?(obj) ? Appeal.find_by(uuid: obj) : LegacyAppeal.find_by(vacols_id: obj) if appeal.nil?
 end
 
+alias :a_ :appeal_
+
 # p_appeal appeal "f3c20696-9c28-4213-bcc3-cba93b6e6184"
 def p_appeal(appeal)
   quietly do
@@ -319,7 +359,8 @@ def p_appeal(appeal)
     ris=appeal.issues
     ris=ris[:request_issues] if appeal.is_a?(Appeal)
     puts "---- #{ris.count} Request Issue(s)"
-    p_request_issues(ris) if defined? p_request_issues
+    p_request_issues(ris) if defined? p_request_issues and appeal.is_a?(Appeal)
+    pp ris if appeal.is_a?(LegacyAppeal)
 
     rius = RequestIssuesUpdate.where(review: appeal)
     puts "---- #{rius.count} Request Issues Update(s)"
@@ -409,6 +450,8 @@ end
 ## === RequestIssue ================================
 
 # https://github.com/department-of-veterans-affairs/caseflow/wiki/Intake-Structure-Renderer
+require './lib/helpers/intake_renderer.rb' unless defined? IntakeRenderer
+require './lib/helpers/intake_renderable.rb' unless defined? IntakeRenderable
 IntakeRenderer.patch_intake_classes
 # puts decision_review.render_intake
 
@@ -479,6 +522,12 @@ def p_epe(epe)
 end
 
 ## === SQL helpers ==============================
+
+def exec_query(query, conn = ActiveRecord::Base.connection)
+  res=conn.exec_query(query)
+  puts res.rows.map{|r| r.map(&:inspect).join(',')}.join('\n')
+  res
+end
 
 def sql_to_csv(raw_conn, sql)
   output = []
