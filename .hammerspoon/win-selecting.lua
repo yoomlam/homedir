@@ -8,6 +8,8 @@ WSELECT_MODAL:bind(nil, "j",     "Focus left",  nil, function() hs.window.focuse
 WSELECT_MODAL:bind(nil, "l",     "Focus right", nil, function() hs.window.focusedWindow():focusWindowEast (CURR_SPACE_WINFILTER:getWindows(), false, true) end)
 WSELECT_MODAL:bind(nil, "i",     "Focus up",    nil, function() hs.window.focusedWindow():focusWindowNorth(CURR_SPACE_WINFILTER:getWindows(), false, true) end)
 WSELECT_MODAL:bind(nil, "k",     "Focus down",  nil, function() hs.window.focusedWindow():focusWindowSouth(CURR_SPACE_WINFILTER:getWindows(), false, true) end)
+WSELECT_MODAL:bind(nil, "h",     "Focus leftish",  nil, function() hs.window.focusedWindow():focusWindowWest (CURR_SPACE_WINFILTER:getWindows(), false, false) end)
+WSELECT_MODAL:bind(nil, ";",     "Focus rightish", nil, function() hs.window.focusedWindow():focusWindowEast (CURR_SPACE_WINFILTER:getWindows(), false, false) end)
 -- WSELECT_MODAL:bind(nil, "left",  "Focus left",  nil, function() hs.window.focusedWindow():focusWindowWest (CURR_SPACE_WINFILTER:getWindows(), false, true) end)
 -- WSELECT_MODAL:bind(nil, "right", "Focus right", nil, function() hs.window.focusedWindow():focusWindowEast (CURR_SPACE_WINFILTER:getWindows(), false, true) end)
 -- WSELECT_MODAL:bind(nil, "up",    "Focus up",    nil, function() hs.window.focusedWindow():focusWindowNorth(CURR_SPACE_WINFILTER:getWindows(), false, true) end)
@@ -15,10 +17,12 @@ WSELECT_MODAL:bind(nil, "k",     "Focus down",  nil, function() hs.window.focuse
 
 ---=== Non-modal versions (for navigation speed)
 --- Change focus
-hs.hotkey.bind(hyper, "j",     "Focus left",  nil, function() hs.window.focusedWindow():focusWindowWest (CURR_SPACE_WINFILTER:getWindows(), false, true) end)
-hs.hotkey.bind(hyper, "l",     "Focus right", nil, function() hs.window.focusedWindow():focusWindowEast (CURR_SPACE_WINFILTER:getWindows(), false, true) end)
-hs.hotkey.bind(hyper, "i",     "Focus up",    nil, function() hs.window.focusedWindow():focusWindowNorth(CURR_SPACE_WINFILTER:getWindows(), false, true) end)
-hs.hotkey.bind(hyper, "k",     "Focus down",  nil, function() hs.window.focusedWindow():focusWindowSouth(CURR_SPACE_WINFILTER:getWindows(), false, true) end)
+hs.hotkey.bind(cmdopt, "j",     "Focus left",  nil, function() hs.window.focusedWindow():focusWindowWest (CURR_SPACE_WINFILTER:getWindows(), false, true) end)
+hs.hotkey.bind(cmdopt, "l",     "Focus right", nil, function() hs.window.focusedWindow():focusWindowEast (CURR_SPACE_WINFILTER:getWindows(), false, true) end)
+-- Conflicts with Chrome Dev Tools: hs.hotkey.bind(cmdopt, "i",     "Focus up",    nil, function() hs.window.focusedWindow():focusWindowNorth(CURR_SPACE_WINFILTER:getWindows(), false, true) end)
+hs.hotkey.bind(cmdopt, "k",     "Focus down",  nil, function() hs.window.focusedWindow():focusWindowSouth(CURR_SPACE_WINFILTER:getWindows(), false, true) end)
+hs.hotkey.bind(cmdopt, "h",     "Focus leftish",  nil, function() hs.window.focusedWindow():focusWindowWest (CURR_SPACE_WINFILTER:getWindows(), false, false) end)
+hs.hotkey.bind(cmdopt, ";",     "Focus rightish", nil, function() hs.window.focusedWindow():focusWindowEast (CURR_SPACE_WINFILTER:getWindows(), false, false) end)
 -- hs.hotkey.bind(hyper, "left",  "Focus left",  nil, function() hs.window.focusedWindow():focusWindowWest (CURR_SPACE_WINFILTER:getWindows(), false, false) end)
 -- hs.hotkey.bind(hyper, "right", "Focus right", nil, function() hs.window.focusedWindow():focusWindowEast (CURR_SPACE_WINFILTER:getWindows(), false, false) end)
 -- hs.hotkey.bind(hyper, "up",    "Focus up",    nil, function() hs.window.focusedWindow():focusWindowNorth(CURR_SPACE_WINFILTER:getWindows(), false, false) end)
@@ -50,6 +54,9 @@ hs.hotkey.bind(ctrlcmd, "left",  nil, function() moveOneSpace("left") end)
 hs.hotkey.bind(ctrlcmd, "right", nil, function() moveOneSpace("right") end)
 hs.hotkey.bind(hyper,   "left",  nil, function() moveOneSpace("left") end)
 hs.hotkey.bind(hyper,   "right", nil, function() moveOneSpace("right") end)
+
+hs.hotkey.bind(cmdopt,  "u",     nil, function() moveOneSpace("left") end)
+hs.hotkey.bind(cmdopt,  "o",     nil, function() moveOneSpace("right") end)
 
 
 --==== Expose

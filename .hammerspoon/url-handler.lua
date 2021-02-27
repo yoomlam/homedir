@@ -30,7 +30,6 @@ myUrlMapping:addUrlPatterns("com.microsoft.edgemac", {
   "app.zenhub.com",
   "app.circleci.com",
   "caseflow.statuspage.io",
-  ".*amazonaws-us-gov.com",
   "dsva.slack.com",
   "github.com",
   "google.com",
@@ -40,7 +39,7 @@ myUrlMapping:addUrlPatterns("com.microsoft.edgemac", {
   "hire.lever.co",
   "www.tms.va.gov",
   "airtable.com",
-  ".*%.amazonaws-us-gov%.com",
+  "console.amazonaws-us-gov.com",
   ".*%.pagerduty%.com",
   ".*%.newrelic%.com",
   ".*%.va%.gov",
@@ -48,7 +47,11 @@ myUrlMapping:addUrlPatterns("com.microsoft.edgemac", {
   "app.retrium.com",
   "latticehq.com",
   "hackmd.io",
-  "notion.so"
+  "max.gov",
+  "easyretro.io",
+  "notion.so",
+  "localhost:3000",
+  "localhost:6006"
 })
 myUrlMapping:addUrlPatterns("us.zoom.xos", { "zoom.us" })
 

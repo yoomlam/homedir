@@ -1,5 +1,7 @@
 -- https://www.hammerspoon.org/go/
 
+cmdopt = {"option", "cmd"}
+cmdoptshift = {"option", "cmd", "shift"}
 --- Common key modifiers
 ctrlcmd = {"ctrl", "cmd"}
 ctrlcmdshift = {"ctrl", "cmd", "shift"}
@@ -152,7 +154,7 @@ APPS_LAUNCH_MODAL:bind(nil, 'v', "Select Snippets", clipPaster.showClipChooser)
 APPS_SELECT_MODAL:bind(nil, 'v', "Select Snippets", clipPaster.showClipChooser)
 
 --- Use modal mode for window selection/navigation
-local winLayoutTips="\n⇧ = snap (or nudge with arrows)\n⌥ = resize\n⌃⇧ = move to space"
+local winLayoutTips="\n⇧ = snap\n⌥ = resize\n⌃⇧ = nudge"
 WSELECT_MODAL = kbModal:newModal(hypershift, WINDOWING_ModalKey, "🌬 Window Layout mode"..winLayoutTips)
 require('win-selecting')
 require('win-moving')

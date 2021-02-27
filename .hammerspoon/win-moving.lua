@@ -70,22 +70,25 @@ WSELECT_MODAL:bind("option", "k", nil, resizeDown,  resizeDown,  resizeDown)
 
 
 --==== Moving across spaces uses 'ctrl'
-local spaces=require('spaces')
+-- local spaces=require('spaces')
 
----=== Modal versions
---- Move window to other space
-WSELECT_MODAL:bind("ctrl-shift", "u",     "Moved left",  nil, function() spaces:moveWindowOneSpace("left", true) end)
-WSELECT_MODAL:bind("ctrl-shift", "o",     "Moved right", nil, function() spaces:moveWindowOneSpace("right", true) end)
-WSELECT_MODAL:bind("ctrl-shift", "left",  "Moved left",  nil, function() spaces:moveWindowOneSpace("left", true) end)
-WSELECT_MODAL:bind("ctrl-shift", "right", "Moved right", nil, function() spaces:moveWindowOneSpace("right", true) end)
+-- ---=== Modal versions
+-- --- Move window to other space
+-- WSELECT_MODAL:bind("ctrl-shift", "u",     "Moved left",  nil, function() spaces:moveWindowOneSpace("left", true) end)
+-- WSELECT_MODAL:bind("ctrl-shift", "o",     "Moved right", nil, function() spaces:moveWindowOneSpace("right", true) end)
+-- WSELECT_MODAL:bind("ctrl-shift", "left",  "Moved left",  nil, function() spaces:moveWindowOneSpace("left", true) end)
+-- WSELECT_MODAL:bind("ctrl-shift", "right", "Moved right", nil, function() spaces:moveWindowOneSpace("right", true) end)
 
----=== Non-modal versions (for navigation speed)
---- Move window to other space; BetterTouchTool does this better because window doesn't disapper
-hs.hotkey.bind(ctrlcmdshift, "u",     "Moved left",  nil, function() spaces:moveWindowOneSpace("left", true) end)
-hs.hotkey.bind(ctrlcmdshift, "o",     "Moved right", nil, function() spaces:moveWindowOneSpace("right", true) end)
-hs.hotkey.bind(ctrlcmdshift, "left",  "Moved left",  nil, function() spaces:moveWindowOneSpace("left", true) end)
-hs.hotkey.bind(ctrlcmdshift, "right", "Moved right", nil, function() spaces:moveWindowOneSpace("right", true) end)
+-- ---=== Non-modal versions (for navigation speed)
+-- --- Move window to other space; BetterTouchTool does this better because window doesn't disapper
+-- hs.hotkey.bind(ctrlcmdshift, "u",     "Moved left",  nil, function() spaces:moveWindowOneSpace("left", true) end)
+-- hs.hotkey.bind(ctrlcmdshift, "o",     "Moved right", nil, function() spaces:moveWindowOneSpace("right", true) end)
+-- hs.hotkey.bind(ctrlcmdshift, "left",  "Moved left",  nil, function() spaces:moveWindowOneSpace("left", true) end)
+-- hs.hotkey.bind(ctrlcmdshift, "right", "Moved right", nil, function() spaces:moveWindowOneSpace("right", true) end)
 
+--- Move window to other monitor
+-- hs.hotkey.bind(ctrlcmdshift, "left",  "Moved left",  nil, function() hs.window.focusedWindow():moveOneScreenWest()end)
+-- hs.hotkey.bind(ctrlcmdshift, "right", "Moved right", nil, function() hs.window.focusedWindow():moveOneScreenEast() end)
 
 -- https://github.com/scottwhudson/Lunette/
 local lunette_cmd = dofile("Spoons/Lunette.spoon/command.lua")
@@ -115,30 +118,30 @@ WSELECT_MODAL:bind("shift", "i", function() lunetteExec("topHalf") end)
 WSELECT_MODAL:bind("shift", "k", function() lunetteExec("bottomHalf") end)
 WSELECT_MODAL:bind("shift", ",", function() lunetteExec("bottomHalf") end)
 
-hs.hotkey.bind(hypershift, "j",   "Snap left",  nil, function() lunetteExec("leftHalf") end)
-hs.hotkey.bind(hypershift, ";", "Snap center",  nil, function() lunetteExec("center") end)
-hs.hotkey.bind(hypershift, "l",  "Snap right",  nil, function() lunetteExec("rightHalf") end)
-hs.hotkey.bind(hypershift, "i",    "Snap top",  nil, function() lunetteExec("topHalf") end)
-hs.hotkey.bind(hypershift, "k", "Snap bottom",  nil, function() lunetteExec("bottomHalf") end)
-hs.hotkey.bind(hypershift, ",", "Snap bottom",  nil, function() lunetteExec("bottomHalf") end)
+hs.hotkey.bind(cmdoptshift, "j",   "Snap left",  nil, function() lunetteExec("leftHalf") end)
+hs.hotkey.bind(cmdoptshift, ";", "Snap center",  nil, function() lunetteExec("center") end)
+hs.hotkey.bind(cmdoptshift, "l",  "Snap right",  nil, function() lunetteExec("rightHalf") end)
+hs.hotkey.bind(cmdoptshift, "i",    "Snap top",  nil, function() lunetteExec("topHalf") end)
+hs.hotkey.bind(cmdoptshift, "k", "Snap bottom",  nil, function() lunetteExec("bottomHalf") end)
+hs.hotkey.bind(cmdoptshift, ",", "Snap bottom",  nil, function() lunetteExec("bottomHalf") end)
 
 WSELECT_MODAL:bind("shift", "u", function() lunetteExec("topLeft") end)
 WSELECT_MODAL:bind("shift", "m", function() lunetteExec("bottomLeft") end)
 WSELECT_MODAL:bind("shift", "o", function() lunetteExec("topRight") end)
 WSELECT_MODAL:bind("shift", ".", function() lunetteExec("bottomRight") end)
 
-hs.hotkey.bind(hypershift, "u",     "Snap topLeft",  nil, function() lunetteExec("topLeft") end)
-hs.hotkey.bind(hypershift, "m",  "Snap bottomLeft",  nil, function() lunetteExec("bottomLeft") end)
-hs.hotkey.bind(hypershift, "o",    "Snap topRight",  nil, function() lunetteExec("topRight") end)
-hs.hotkey.bind(hypershift, ".", "Snap bottomRight",  nil, function() lunetteExec("bottomRight") end)
+hs.hotkey.bind(cmdoptshift, "u",     "Snap topLeft",  nil, function() lunetteExec("topLeft") end)
+hs.hotkey.bind(cmdoptshift, "m",  "Snap bottomLeft",  nil, function() lunetteExec("bottomLeft") end)
+hs.hotkey.bind(cmdoptshift, "o",    "Snap topRight",  nil, function() lunetteExec("topRight") end)
+hs.hotkey.bind(cmdoptshift, ".", "Snap bottomRight",  nil, function() lunetteExec("bottomRight") end)
 
 WSELECT_MODAL:bind("shift", "-", function() lunetteExec("shrink") end)
 WSELECT_MODAL:bind("shift", "=", function() lunetteExec("enlarge") end)
 WSELECT_MODAL:bind("shift", "n", function() lunetteExec("shrink") end)
 WSELECT_MODAL:bind("shift", "h", function() lunetteExec("enlarge") end)
 
-hs.hotkey.bind(hypershift, "n",  "Shrink",  nil, function() lunetteExec("shrink") end)
-hs.hotkey.bind(hypershift, "h", "Enlarge",  nil, function() lunetteExec("enlarge") end)
+hs.hotkey.bind(cmdoptshift, "n",  "Shrink",  nil, function() lunetteExec("shrink") end)
+hs.hotkey.bind(cmdoptshift, "h", "Enlarge",  nil, function() lunetteExec("enlarge") end)
 
 WSELECT_MODAL:bind("shift", "return", function() lunetteExec("fullScreen") end)
 

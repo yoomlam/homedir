@@ -69,8 +69,12 @@ function obj:init()
       -- If the `control` key has changed to the down state, then start the
       -- timer. If the `control` key changes to the up state before the timer
       -- expires, then send `escape`.
-      -- print(tostring(tableLength(newModifiers)))
-      if tableLength(newModifiers) > 0 then -- key changed to down state
+      -- print('modifier count='..tostring(modifierCount))
+      modifierCount = tableLength(newModifiers)
+      if modifierCount > 3 then
+        --  (ctrl, ctrl, shift, left/right) is used to move window to other space
+        self:reset()
+      elseif modifierCount > 0 then -- key changed to down state
         -- print('keydown '..tostring(self.keypressCount))
         local strokeTab = self.strokeMap[flagTabToString(newModifiers)]
         -- print(flagTabToString(newModifiers).." -> "..tostring(strokeTab).." "..self.keypressCount)
@@ -114,6 +118,7 @@ function obj:init()
             -- print('keyup++ '..tostring(self.keypressCount))
           end
         end
+        -- print('controlKeyTimer:stop')
         self.controlKeyTimer:stop()
       end
       self.lastModifiers = newModifiers
