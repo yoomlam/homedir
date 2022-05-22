@@ -38,6 +38,8 @@ hs.hotkey.bind(ctrlcmdshift, "k", "Nudge down",  nil, nudgeDown)
 -- WSELECT_MODAL:bind("shift", "[", nil, function() ww:moveToScreen("left") end)
 -- WSELECT_MODAL:bind("shift", "]", nil, function() ww:moveToScreen("right") end)
 
+--- Resize window
+
 -- local function resize(deltaX, deltaY)
 --   local window = hs.window.focusedWindow()
 --   local frame = window:frame()
@@ -70,21 +72,21 @@ WSELECT_MODAL:bind("option", "k", nil, resizeDown,  resizeDown,  resizeDown)
 
 
 --==== Moving across spaces uses 'ctrl'
--- local spaces=require('spaces')
+local spaces=require('spaces')
 
--- ---=== Modal versions
--- --- Move window to other space
--- WSELECT_MODAL:bind("ctrl-shift", "u",     "Moved left",  nil, function() spaces:moveWindowOneSpace("left", true) end)
--- WSELECT_MODAL:bind("ctrl-shift", "o",     "Moved right", nil, function() spaces:moveWindowOneSpace("right", true) end)
--- WSELECT_MODAL:bind("ctrl-shift", "left",  "Moved left",  nil, function() spaces:moveWindowOneSpace("left", true) end)
--- WSELECT_MODAL:bind("ctrl-shift", "right", "Moved right", nil, function() spaces:moveWindowOneSpace("right", true) end)
+---=== Modal versions
+--- Move window to other space
+WSELECT_MODAL:bind("ctrl-shift", "u",     "Moved left",  nil, function() spaces:moveWindowOneSpace("left", true) end)
+WSELECT_MODAL:bind("ctrl-shift", "o",     "Moved right", nil, function() spaces:moveWindowOneSpace("right", true) end)
+WSELECT_MODAL:bind("ctrl-shift", "left",  "Moved left",  nil, function() spaces:moveWindowOneSpace("left", true) end)
+WSELECT_MODAL:bind("ctrl-shift", "right", "Moved right", nil, function() spaces:moveWindowOneSpace("right", true) end)
 
--- ---=== Non-modal versions (for navigation speed)
--- --- Move window to other space; BetterTouchTool does this better because window doesn't disapper
--- hs.hotkey.bind(ctrlcmdshift, "u",     "Moved left",  nil, function() spaces:moveWindowOneSpace("left", true) end)
--- hs.hotkey.bind(ctrlcmdshift, "o",     "Moved right", nil, function() spaces:moveWindowOneSpace("right", true) end)
--- hs.hotkey.bind(ctrlcmdshift, "left",  "Moved left",  nil, function() spaces:moveWindowOneSpace("left", true) end)
--- hs.hotkey.bind(ctrlcmdshift, "right", "Moved right", nil, function() spaces:moveWindowOneSpace("right", true) end)
+---=== Non-modal versions (for navigation speed)
+--- Move window to other space; BetterTouchTool does this a little better but works
+hs.hotkey.bind(ctrlcmdshift, "u",     "Moved left",  nil, function() spaces:moveWindowOneSpace("left", true) end)
+hs.hotkey.bind(ctrlcmdshift, "o",     "Moved right", nil, function() spaces:moveWindowOneSpace("right", true) end)
+hs.hotkey.bind(ctrlcmdshift, "left",  "Moved left",  nil, function() spaces:moveWindowOneSpace("left", true) end)
+hs.hotkey.bind(ctrlcmdshift, "right", "Moved right", nil, function() spaces:moveWindowOneSpace("right", true) end)
 
 --- Move window to other monitor
 -- hs.hotkey.bind(ctrlcmdshift, "left",  "Moved left",  nil, function() hs.window.focusedWindow():moveOneScreenWest()end)

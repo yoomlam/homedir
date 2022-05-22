@@ -30,8 +30,9 @@ myUrlMapping:addUrlPatterns("com.microsoft.edgemac", {
   "app.zenhub.com",
   "app.circleci.com",
   "caseflow.statuspage.io",
-  "dsva.slack.com",
+  "slack.com",
   "github.com",
+  "github.io",
   "google.com",
   ".*%.gle",
   "sentry.ds.va.gov",
@@ -39,7 +40,7 @@ myUrlMapping:addUrlPatterns("com.microsoft.edgemac", {
   "hire.lever.co",
   "www.tms.va.gov",
   "airtable.com",
-  "console.amazonaws-us-gov.com",
+  "amazonaws-us-gov.com",
   ".*%.pagerduty%.com",
   ".*%.newrelic%.com",
   ".*%.va%.gov",
@@ -49,11 +50,19 @@ myUrlMapping:addUrlPatterns("com.microsoft.edgemac", {
   "hackmd.io",
   "max.gov",
   "easyretro.io",
-  "notion.so",
-  "localhost:3000",
-  "localhost:6006"
+  "notion.so","notion.site",
+  "mural.co",
+  "nava-pbc.team.eden.io",
+  "localhost",
+  -- "localhost:3000",
+  "localhost:6006",
+  "localhost:1313",
+  "verbose-broccoli-9868be41",
+  "depo-platform-documentation.scrollhelp.site",
+  "atlassian.net",
+  "scrollhelp.site"
 })
-myUrlMapping:addUrlPatterns("us.zoom.xos", { "zoom.us" })
+-- myUrlMapping:addUrlPatterns("us.zoom.xos", { "zoom.us" })
 
 -- For testing
 local function openFunc(arg)

@@ -64,41 +64,42 @@ require('win-expose')
 -- hs.hotkey.bind(hypershift, HS_EXPOSE_ModalKey, 'Expose', function() expose:toggleShow() end)
 -- hs.hotkey.bind('ctrl-cmd-shift','k','App Expose',function() expose_app:toggleShow() end)
 -- hs.hotkey.bind('ctrl-cmd','j','Expose',function()expose:toggleShow()end)
+
 WSELECT_MODAL:bind(nil, "e", 'Expose all',        function() exitModal(); expose:toggleShow() end)
 WSELECT_MODAL:bind(nil, "a", 'Expose this app',   function() exitModal(); expose_app:toggleShow() end)
 WSELECT_MODAL:bind(nil, "s", 'Expose this space', function() exitModal(); expose_space:toggleShow() end)
 WSELECT_MODAL:bind(nil, "b", 'Expose browsers',   function() exitModal(); expose_browsers:toggleShow() end)
 
 --====  Focused window border
-local global_border = nil
-local BORDER_WIDTH = 3
-local strokeWidth=BORDER_WIDTH*2
-function redrawBorder()
-  win = hs.window.focusedWindow()
-  if win ~= nil then
-    top_left = win:topLeft()
-    size = win:size()
-    if global_border ~= nil then
-      global_border:delete()
-    end
-    global_border = hs.drawing.rectangle(hs.geometry.rect(
-    	top_left['x']-BORDER_WIDTH/2, top_left['y']-BORDER_WIDTH/2,
-    	size['w']+BORDER_WIDTH, size['h']+BORDER_WIDTH))
-    global_border:setStrokeColor({["red"]=0.8,["blue"]=0.8,["green"]=0,["alpha"]=0.8})
-    global_border:setFill(false)
-    global_border:setStrokeWidth(strokeWidth)
-    global_border:show()
-  else
-  end
-end
+-- local global_border = nil
+-- local BORDER_WIDTH = 3
+-- local strokeWidth=BORDER_WIDTH*2
+-- function redrawBorder()
+--   win = hs.window.focusedWindow()
+--   if win ~= nil then
+--     top_left = win:topLeft()
+--     size = win:size()
+--     if global_border ~= nil then
+--       global_border:delete()
+--     end
+--     global_border = hs.drawing.rectangle(hs.geometry.rect(
+--     	top_left['x']-BORDER_WIDTH/2, top_left['y']-BORDER_WIDTH/2,
+--     	size['w']+BORDER_WIDTH, size['h']+BORDER_WIDTH))
+--     global_border:setStrokeColor({["red"]=0.8,["blue"]=0.8,["green"]=0,["alpha"]=0.8})
+--     global_border:setFill(false)
+--     global_border:setStrokeWidth(strokeWidth)
+--     global_border:show()
+--   else
+--   end
+-- end
 -- redrawBorder()
 
-function eraseBorder()
-  if global_border ~= nil then
-      global_border:delete()
-      global_border=nil
-  end
-end
+-- function eraseBorder()
+--   if global_border ~= nil then
+--       global_border:delete()
+--       global_border=nil
+--   end
+-- end
 
 allwindows = hs.window.filter.new(nil)
 -- allwindows:subscribe(hs.window.filter.windowClosed,    redrawBorder)

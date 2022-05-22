@@ -1,3 +1,5 @@
+# frozen_string_literal: true
+
 # Usage:
 # If rails console opens a PRY REPL, do one of these:
 #   * add `load "path/to/this/file"` to .pryrc
@@ -14,27 +16,60 @@
 
 puts "Loading #{File.expand_path(__FILE__)} ..."
 
+# https://github.com/microsoft/terminal/issues/2520#issuecomment-577030936
+# {
+#   "\000H" => :rl_get_previous_history, # Up
+#   "\000P" => :rl_get_next_history, # Down
+#   "\000M" => :rl_forward_char,  # Right
+#   "\000K" => :rl_backward_char, # Left
+#   "\000G" => :rl_beg_of_line,   # Home
+#   "\000O" => :rl_end_of_line,   # End
+#   "\000s" => :rl_backward_word, # Ctrl-Left
+#   "\000t" => :rl_forward_word, # Ctrl-Right
+#   "\000S" => :rl_delete, # Delete
+#   "\000R" => :rl_overwrite_mode # Insert
+# }.each do |keyseq, method|
+#   Readline.rl_bind_keyseq_if_unbound(keyseq, method)
+# end
+
+def _my_prompt(color1, color2, color3, label)
+  [
+    proc { |target_self, nest_level, pry|
+      "[#{pry.input_ring.size}] \001\e[0;#{color1}m\002#{label}" \
+        "\001\e[0m\002(\001\e[0;#{color3}m\002#{Pry.view_clip(target_self)}" \
+        "\001\e[0m\002)#{":#{nest_level}" unless nest_level.zero?}> "
+    },
+    proc { |target_self, nest_level, pry|
+      "[#{pry.input_ring.size}] \001\e[1;#{color2}m\002#{label}" \
+        "\001\e[0m\002(\001\e[1;#{color3}m\002#{Pry.view_clip(target_self)}" \
+        "\001\e[0m\002)#{":#{nest_level}" unless nest_level.zero?}_   "
+    }
+  ]
+end
+
 def _set_pry_prompt
   puts "    Configuring Pry.config.prompt"
-  Pry.config.prompt = [
-    proc { |target_self, nest_level, pry|
-          "[#{pry.input_ring.size}] \001\e[0;35m\002#{Pry.config.prompt_name}"+
-          "\001\e[0m\002(\001\e[0;33m\002#{Pry.view_clip(target_self)}"+
-          "\001\e[0m\002)#{":#{nest_level}" unless nest_level.zero?}> "
-         },
-    proc { |target_self, nest_level, pry|
-          "[#{pry.input_ring.size}] \001\e[1;32m\002#{Pry.config.prompt_name}"+
-          "\001\e[0m\002(\001\e[1;33m\002#{Pry.view_clip(target_self)}"+
-          "\001\e[0m\002)#{":#{nest_level}" unless nest_level.zero?}*   "
-         }
-    ]
+  default_prompt = Pry::Prompt[:default]
+  prompt_procs = case Rails.env
+                 when "production"
+                   _my_prompt(31, 34, 35, "#{Pry.config.prompt_name} prod")
+                 when "development"
+                   _my_prompt(36, 32, 33, "dev")
+                 else
+                   _my_prompt(36, 32, 33, "#{Pry.config.prompt_name} #{Rails.env}")
+                      end
+  Pry.config.prompt = Pry::Prompt.new("Yoom", "Yoom's prompt", prompt_procs)
 end
 
 def tiny_prompt
   sql_off
   # tiny_prompt=proc { "\001\e[0;35m\002> \001\e[0m\002" }
-  tiny_prompt = proc { "" }
-  pry({ prompt: tiny_prompt })
+  tiny_prompt = [
+    proc { "\001\e[0;31m\002>\001\e[0m\002 " },
+    proc { "\001\e[0;31m\002 \001\e[0m\002 " }
+  ]
+  Pry.config.prompt = Pry::Prompt.new("Yoom tiny", "Yoom's tiny prompt", tiny_prompt)
+  pry
 end
 # def no_prompt
 #   cr_prompt=proc { |target_self, nest_level, pry|
@@ -48,39 +83,40 @@ def configure_pry
   _set_pry_prompt
   # Pry.config.pager = false
   Pry.config.commands.alias_command "hst", "hist --no-numbers"
-  $PRY_CONFIGURED=true
+  $PRY_CONFIGURED = true
 end
 
 ## === Introspection ===========================
 
 # print methods local to an object's class
 # someobj.local_methods
-def local_methods(obj=self)
+def local_methods(obj = self)
   (obj.methods - Object.instance_methods).sort
 end
 
-def obj_inst_methods(obj=self)
+def obj_inst_methods(obj = self)
   clazz = obj.is_a?(Class) ? obj : obj.class
   clazz.instance_methods(false).sort
 end
-def public_methods_without_parent(obj=self)
+
+def public_methods_without_parent(obj = self)
   (obj.public_methods - obj.class.superclass.methods).sort
 end
 
-IGNORED_PREFIXES = %w"_ before_ after_ autosave_"
+IGNORED_PREFIXES = %w[_ before_ after_ autosave_].freeze
 # ignore_prefixes(obj_inst_methods(obj))
 # ignore_prefixes(methods_without_parent(obj))
 def ignore_prefixes(methods)
-  methods.reject{|m|
-    IGNORED_PREFIXES.any?{|prefix| m.to_s.start_with?(prefix)}
-  }
+  methods.reject do |m|
+    IGNORED_PREFIXES.any? { |prefix| m.to_s.start_with?(prefix) }
+  end
 end
 
 ## === Debugging ============================
 
 BACKTRACE_CLEANER = ActiveSupport::BacktraceCleaner.new
-BACKTRACE_CLEANER.add_filter   { |line| line.gsub(Rails.root.to_s, '.') } # strip the Rails.root prefix
-#BACKTRACE_CLEANER.add_silencer { |line| line =~ /gems|\/lib\/|\.rbenv\// } # skiplines
+BACKTRACE_CLEANER.add_filter   { |line| line.gsub(Rails.root.to_s, ".") } # strip the Rails.root prefix
+# BACKTRACE_CLEANER.add_silencer { |line| line =~ /gems|\/lib\/|\.rbenv\// } # skiplines
 BACKTRACE_CLEANER.add_silencer { |line| line =~ /\.rbenv\// } # skiplines
 
 def caller_
@@ -103,10 +139,10 @@ def print_table_t(objects, *method_names)
   col_width = (terminal_width / cols) - 1 # Column spacing
 
   Array(method_names).map do |method_name|
-    cells = objects.map{ |o| o.send(method_name).inspect }
+    cells = objects.map { |o| o.send(method_name).inspect }
     cells.unshift(method_name)
 
-    puts cells.map{ |cell| cell.to_s.ljust(col_width) }.join ' '
+    puts cells.map { |cell| cell.to_s.ljust(col_width) }.join " "
   end
   nil
 end
@@ -129,57 +165,59 @@ def print_table(col_labels, arr)
   arr.each { |h| puts write_line(columns, h) }
   puts write_divider(columns, "+++")
 end
+
 def derive_label_and_maxwidth(col_labels, arr)
-  col_labels.each_with_object({}) do |(col,label),h|
+  col_labels.each_with_object({}) do |(col, label), h|
     h[col] = { label: label,
-               width: [arr.map { |g| g[col].to_s.size }.max, label.size].max
-             }
+               width: [arr.map { |g| g[col].to_s.size }.max, label.size].max }
   end
 end
-def write_line(columns, h, col_sep="|")
-  str = columns.keys.map { |k|
-    "#{h.send(k).to_s.ljust(columns[k][:width])}"
-  }.join(" #{col_sep} ")
+
+def write_line(columns, h, col_sep = "|")
+  str = columns.keys.map do |k|
+    h.send(k).to_s.ljust(columns[k][:width]).to_s
+  end.join(" #{col_sep} ")
   "| #{str} |"
 end
-def write_header(columns, col_sep="|")
-  "| #{ columns.map { |_,g| g[:label].ljust(g[:width]) }.join(" #{col_sep} ") } |"
+
+def write_header(columns, col_sep = "|")
+  "| #{columns.map { |_, g| g[:label].ljust(g[:width]) }.join(" #{col_sep} ")} |"
 end
-def write_divider(columns, col_sep="+|+")
-  "#{col_sep[0]}-#{ columns.map { |_,g| "-"*g[:width] }.join("-#{col_sep[1]}-") }-#{col_sep[2]}"
+
+def write_divider(columns, col_sep = "+|+")
+  "#{col_sep[0]}-#{columns.map { |_, g| '-' * g[:width] }.join("-#{col_sep[1]}-")}-#{col_sep[2]}"
 end
 # -------------------------------
 
-
 ## === TaskTreeRender ===========================
 
-$treee = {
-  renderer: TaskTreeRenderModule.global_renderer,
-  attrs: TaskTreeRenderModule.global_renderer.config.default_atts,
-  config: TaskTreeRenderModule.global_renderer.config
-}
+# $treee = {
+#   renderer: TaskTreeRenderModule.global_renderer,
+#   attrs: TaskTreeRenderModule.global_renderer.config.default_atts,
+#   config: TaskTreeRenderModule.global_renderer.config
+# }
 
-def treee_compact
-  TaskTreeRenderModule.global_renderer.compact_mode
-end
+# def treee_compact
+#   TaskTreeRenderModule.global_renderer.compact_mode
+# end
 
-def treee_attrs(*atts)
-  TaskTreeRenderModule.global_renderer.config.tap do |conf|
-    conf.default_atts = *atts
-  end
-end
+# def treee_attrs(*atts)
+#   TaskTreeRenderModule.global_renderer.config.tap do |conf|
+#     conf.default_atts = *atts
+#   end
+# end
 
-def treee_add_attrs(*atts)
-  treee_attrs(*($treee[:attrs] + atts))
-end
+# def treee_add_attrs(*atts)
+#   treee_attrs(*($treee[:attrs] + atts))
+# end
 
 ## === AWS helpers ============================
 
 # copy_to_s3("/opt/caseflow-certification/src/hearings2.csv", "temp/hearings2.csv", bucket_name: "dsva-appeals-caseflow-prod")
 def copy_to_s3(filepath, filename, bucket_name: Rails.application.config.s3_bucket_name)
   Aws.config.update(region: "us-gov-west-1")
-  $s3_client = Aws::S3::Client.new unless $s3_client
-  $s3_resource = Aws::S3::Resource.new(client: $s3_client) unless $s3_resource
+  $s3_client ||= Aws::S3::Client.new
+  $s3_resource ||= Aws::S3::Resource.new(client: $s3_client)
   bucket = $s3_resource.bucket(bucket_name)
 
   bucket.object(filename).upload_file(filepath, acl: "private", server_side_encryption: "AES256")
@@ -188,13 +226,13 @@ end
 ## === Ruby helpers ============================
 
 def split_into_weeks(time_span)
-  week=time_span.begin..time_span.begin.end_of_week
-  time_periods=[week]
-  while week.begin.next_week.end_of_week < time_span.end do
-    week=week.begin.next_week..week.begin.next_week.end_of_week
+  week = time_span.begin..time_span.begin.end_of_week
+  time_periods = [week]
+  while week.begin.next_week.end_of_week < time_span.end
+    week = week.begin.next_week..week.begin.next_week.end_of_week
     time_periods << week
   end
-  time_periods << (week.begin.next_week..(time_span.end-1))
+  time_periods << (week.begin.next_week..(time_span.end - 1))
 end
 
 ## === query helpers ============================
@@ -206,19 +244,23 @@ end
 # cs=Claimant.joins(:person).where("people.date_of_birth <= ?", 75.years.ago).where(decision_review_type: :Appeal)
 # cs.group(:type).count
 
-def groupby_date(query, period: 'month', column: 'updated_at')
-  query.group("DATE_TRUNC('#{period}', #{column})").count.sort_by{|key, v| key ? key : Time.utc(1900)}.to_h
+def groupby_date(query, period: "month", column: "updated_at")
+  query.group("DATE_TRUNC('#{period}', #{column})").count.sort_by { |key, _v| key || Time.utc(1900) }.to_h
 end
 
-def groupby_date_string(query, ftime: '%Y-%m', column: 'updated_at')
+def groupby_date_string(query, ftime: "%Y-%m", column: "updated_at")
   # query.group_by{|h| "#{h[column]&.strftime(ftime)}"}.map{|k,v| [k,v.size]}.to_h.sort_by{|key, v| key}.to_h
-  query.group_by{|h| "#{h[column]&.strftime(ftime)}"}.transform_values(&:count).sort_by{|key, v| key}.to_h
+  query.group_by { |h| h[column]&.strftime(ftime).to_s }.transform_values(&:count).sort_by { |key, _v| key }.to_h
 end
 
-def barchart(query, column: 'updated_at', tick: '*')
-  query.order(column).map { |u| u[column]&.strftime('%Y-%m') }.reduce(Hash.new(0)) { |a, b|
-    a[b] = a.keys.include?(b) ? a[b] + "-" : "-"; a
-  }
+def barchart(query, column: "updated_at", tick: "*")
+  query.order(column).map { |u| u[column]&.strftime("%Y-%m") }.reduce(Hash.new(0)) do |a, b|
+    a[b] = a.key?(b) ? a[b] + "-" : "-"; a
+  end
+end
+
+def count_freq(arr)
+  arr.each_with_object(Hash.new(0)) { |obj, counts| counts[obj] += 1 }
 end
 
 ## === helper methods ============================
@@ -232,15 +274,22 @@ $SAVED_LOGGER_LEVEL = ActiveRecord::Base.logger.level if defined?(Rails)
 def sql_off
   ActiveRecord::Base.logger.level = :warn
 end
+
 def sql_on
   ActiveRecord::Base.logger.level = $SAVED_LOGGER_LEVEL
 end
+
 def sql_debug
   ActiveRecord::Base.logger = Logger.new(STDOUT)
 end
 
+# require "anbt-sql-formatter/formatter"
+def sql_(query)
+  puts formatter.format(query.dup)
+end
+
 # Suppress SQL queries to reduce console clutter
-$NESTED_QUIETLY=0
+$NESTED_QUIETLY = 0
 def quietly
   sql_off if $NESTED_QUIETLY == 0
   $NESTED_QUIETLY += 1
@@ -254,47 +303,87 @@ def could_be_ssn?(ssn)
   ssn =~ /^[0-8]\d{8}$/
 end
 
+## ===========================
+
+# # Prints a more readable version of PaperTrail versioning data
+# # Usage: `pp _versions DistributionTask.last`
+# def _versions(record)
+#   record.try(:versions)&.map do |version|
+#     {
+#       who: [User.find_by_id(version.whodunnit)].compact
+#         .map { |user| "#{user.css_id} (#{user.id}, #{user.full_name})" }.first,
+#       when: version.created_at,
+#       changeset: version.changeset
+#     }
+#   end
+# end
+
+# _versions
+# def pt_(record)
+#   puts record.versions&.map { |v|
+#     [[User.find(v.whodunnit)].pluck(:css_id, :full_name).join(","),
+#      v.object_changes.to_s]
+#   }.join("====\n")
+# end
+
 ## === Person ====================================
 
 def p_vet(id)
-  vet=Veteran.find_by_file_number_or_ssn(id)
+  vet = Veteran.find_by_file_number_or_ssn(id)
 
-  crs=ClaimReview.find_all_visible_by_file_number(vet.file_number)
-  crs.each{|cr| p_claim_review(cr)}
+  crs = ClaimReview.find_all_visible_by_file_number(vet.file_number)
+  crs.each { |cr| p_claim_review(cr) }
 
-  appeals=AppealFinder.find_appeals_with_file_numbers(vet.file_number)
-  appeals.each{|a| p_appeal(a)}
+  appeals = AppealFinder.find_appeals_with_file_numbers(vet.file_number)
+  appeals.each { |a| p_appeal(a) }
 
   vet
 end
 
-# user 3
-# user "BvaAAbshire"
-# user 'ABS'
-def user_(id)
-  user=User.find(id) if id.is_a? Numeric
-  return user if user
+def person_(id)
+  person = Person.find(id) if id.is_a? Numeric
+  return person if person
 
-  user=User.find_by(css_id: id.upcase) if id.is_a? String
-  return user if user
+  persons = Person.where("UPPER(name) LIKE ?", "%#{id.upcase}%")
+  return persons.first if persons.count == 1
 
-  staff=VACOLS::Staff.find_by(slogid: id.upcase)
-  return User.find_by(css_id: staff.sdomainid) if staff
-
-  users = User.where("UPPER(full_name) LIKE ?", "%#{id.upcase}%")
-  return users.first if users.count==1
-  puts "Found #{users.count} users with full_name like %#{id.upcase}%: #{users.map{|u| [u.css_id, u.full_name]}}"
+  puts "Found #{persons.count} persons with name like %#{id.upcase}%: #{persons.map { |u| [u.id, u.name] }}"
 end
 
-def staff_(id)
-	return VACOLS::Staff.find_by(sdomainid: id.css_id) if id.is_a? User
+# _user
+# # user_ 3
+# # user_ "BvaAAbshire"
+# # user_ 'ABS'
+# def user_(id)
+#   user = User.find(id) if id.is_a? Numeric
+#   return user if user
 
-	staff=VACOLS::Staff.find_by(slogid: id.upcase)
-	return staff if staff
+#   user = User.find_by(css_id: id.upcase) if id.is_a? String
+#   return user if user
 
-	staff=VACOLS::Staff.find_by(sdomainid: id.upcase)
-	return staff if staff
-end
+#   staff = VACOLS::Staff.find_by(slogid: id.upcase)
+#   return User.find_by(css_id: staff.sdomainid) if staff
+
+#   users = User.where("UPPER(full_name) LIKE ?", "%#{id.upcase}%")
+#   return users.first if users.count == 1
+
+#   puts "Found #{users.count} users with full_name like %#{id.upcase}%: #{users.map { |u| [u.css_id, u.full_name] }}"
+# end
+
+# def staff_(id)
+#   return VACOLS::Staff.find_by(sdomainid: id.css_id) if id.is_a? User
+
+#   staff = VACOLS::Staff.find_by(slogid: id.upcase)
+#   return staff if staff
+
+#   staff = VACOLS::Staff.find_by(sdomainid: id.upcase)
+#   return staff if staff
+
+#   staff = VACOLS::Staff.where("UPPER(slogid) LIKE ?", "%#{id.upcase}%")
+#   return staff.first if staff.count == 1
+
+#   puts "Found #{staff.count} staff with full_name like %#{id.upcase}%: #{staff.map { |u| [u.css_id, u.full_name] }}"
+# end
 
 # p_user user "BvaAAbshire"
 def p_user(obj)
@@ -320,25 +409,40 @@ def p_user(obj)
 end
 
 # Need to access external systems
-RequestStore[:current_user] = User.system_user
+# RequestStore[:current_user] = User.find_by_css_id("VACOLAMD")
+def sysuser_
+  RequestStore[:current_user] = User.system_user
+end
+
+# Set time zone in Rails console to mimic webapp
+# Time.zone = "America/New_York"
 
 # authenticate user
 def auth_user(user)
-  RequestStore[:current_user]=user
+  RequestStore[:current_user] = user
   # https://github.com/department-of-veterans-affairs/caseflow/wiki/Debugging-Tips#authenticating-in-the-rails-console
   User.authentication_service.user_session = User.authentication_service.get_user_session(user.id)
 end
 
+## === Veteran ====================================
+
+# def vets_appeals(vet)
+#   AppealFinder.new(user: User.system_user).find_appeals_for_veterans([vet])
+# end
+
 ## === Appeal ====================================
 
-# appeal "1c11a1ae-43bd-449b-9416-7ccb9cb06c11"
-# appeal 1234567
-def appeal_(obj)
-  appeal = obj if obj.is_a?(Appeal) || obj.is_a?(LegacyAppeal)
-  appeal = uuid?(obj) ? Appeal.find_by(uuid: obj) : LegacyAppeal.find_by(vacols_id: obj) if appeal.nil?
-end
+# # appeal "1c11a1ae-43bd-449b-9416-7ccb9cb06c11"
+# # appeal 1234567
+# def appeal_(obj)
+#   appeal = obj if obj.is_a?(Appeal) || obj.is_a?(LegacyAppeal)
+#   appeal ||= uuid?(obj) ? Appeal.find_by(uuid: obj) : LegacyAppeal.find_by(vacols_id: obj)
+# end
 
-alias :a_ :appeal_
+# alias _a _appeal
+def _Appeal(id)
+  Appeal.find(id)
+end
 
 # p_appeal appeal "f3c20696-9c28-4213-bcc3-cba93b6e6184"
 def p_appeal(appeal)
@@ -347,50 +451,59 @@ def p_appeal(appeal)
 
     p_legacy_appeal(appeal) if appeal.is_a?(LegacyAppeal)
 
-    AttorneyCaseReview.find_by(task_id: appeal.tasks.pluck(:id)).tap {|acr| puts acr&.inspect }
+    AttorneyCaseReview.find_by(task_id: appeal.tasks.pluck(:id)).tap { |acr| puts acr&.inspect }
 
-    JudgeCaseReview.find_by(task_id: appeal.tasks.pluck(:id)).tap {|jcr| puts "  #{jcr&.inspect}"}
+    JudgeCaseReview.find_by(task_id: appeal.tasks.pluck(:id)).tap { |jcr| puts "  #{jcr&.inspect}" }
 
     puts "---- #{appeal.hearings.count} Hearings"
-    appeal.hearings.each{|hearing|
-      p_hearing(hearing)
-    } if defined? p_hearing
+    if defined? p_hearing
+      appeal.hearings.each do |hearing|
+        p_hearing(hearing)
+      end
+    end
 
-    ris=appeal.issues
-    ris=ris[:request_issues] if appeal.is_a?(Appeal)
+    ris = appeal.issues
+    ris = ris[:request_issues] if appeal.is_a?(Appeal)
     puts "---- #{ris.count} Request Issue(s)"
-    p_request_issues(ris) if defined? p_request_issues and appeal.is_a?(Appeal)
+    p_request_issues(ris) if defined? p_request_issues && appeal.is_a?(Appeal)
     pp ris if appeal.is_a?(LegacyAppeal)
 
     rius = RequestIssuesUpdate.where(review: appeal)
     puts "---- #{rius.count} Request Issues Update(s)"
-    rius.each_with_index{|riu,i|
-      p_request_issue_update(riu,i)
-    } if defined? p_request_issue_update
+    if defined? p_request_issue_update
+      rius.each_with_index do |riu, i|
+        p_request_issue_update(riu, i)
+      end
+    end
 
     if appeal.is_a?(LegacyAppeal)
-      decs=appeal.decisions
+      decs = appeal.decisions
       puts "---- #{decs.count} Decision(s)"
-      decs.each{|doc| puts "  #{doc&.inspect}"}
+      decs.each { |doc| puts "  #{doc&.inspect}" }
     end
 
     puts "---- Legacy appeals for vet "
-    decision_revew=appeal
+    decision_revew = appeal
     decision_revew.serialized_legacy_appeals
 
     appeal
   end
 end
 
+# def legacy_(docket_number)
+#   vids = VACOLS::Case.joins(:folder).where("folder.tinum": docket_number).pluck(:id)
+#   LegacyAppeal.where(vacols_id: vids)
+# end
+
 # p_appeal appeal 3085659
 def p_legacy_appeal(appeal)
   quietly do
-    tasks=LegacyWorkQueue.tasks_by_appeal_id(appeal.vacols_id)
+    tasks = LegacyWorkQueue.tasks_by_appeal_id(appeal.vacols_id)
     puts "____________________"
     puts "---- Legacy Tasks"
     tasks.map do |t|
       puts "#{t.class.name}, assigned_by: #{t.assigned_by&.inspect} #{t.assigned_by&.sdomainid}, assigned_to: #{t.assigned_to&.inspect} #{t.assigned_to&.sdomainid}, at: #{t.assigned_at}\n"
-    rescue
+    rescue StandardError
       puts "#{t.class.name}, assigned_by: #{t.assigned_by&.inspect}, assigned_to: #{t.assigned_to&.inspect}, at: #{t.assigned_at}\n"
     end
 
@@ -406,13 +519,12 @@ end
 ## === Legacy appeal =============================
 
 def legacies(vet)
-  LegacyAppeal.fetch_appeals_by_file_number(vet.file_number).tap{|las|
-    las.map{|l|
+  LegacyAppeal.fetch_appeals_by_file_number(vet.file_number).tap do |las|
+    las.map  do |l|
       { nod: l.nod_date, soc: l.soc_date, ssoc: l.ssoc_dates,
-        vacols_id: l.vacols_id, disposition: l.disposition
-      }
-    }
-  }
+        vacols_id: l.vacols_id, disposition: l.disposition }
+    end
+  end
 end
 
 # Get the data for a specific vacols issue, useful for validating results after making manual updates,
@@ -436,65 +548,76 @@ end
 def p_hearing(hearing)
   quietly do
     puts hearing.inspect
-    puts "    Day:#{[hearing.hearing_day.scheduled_for, hearing.hearing_day.request_type, hearing.hearing_day.regional_office]}, "+
-      "Judge:#{[hearing.judge.css_id, hearing.judge.full_name]}" if hearing.hearing_day
+    if hearing.hearing_day
+      puts "    Day:#{[hearing.hearing_day.scheduled_for, hearing.hearing_day.request_type, hearing.hearing_day.regional_office]}, " \
+           "Judge:#{[hearing.judge.css_id, hearing.judge.full_name]}"
+    end
 
     p_legacy_hearing(hearing) if hearing.is_a? LegacyHearing
   end
 end
 
-def p_legacy_hearing(hearing)
+def p_legacy_hearing(_hearing)
   puts "TBD"
 end
 
 ## === RequestIssue ================================
 
-# https://github.com/department-of-veterans-affairs/caseflow/wiki/Intake-Structure-Renderer
-require './lib/helpers/intake_renderer.rb' unless defined? IntakeRenderer
-require './lib/helpers/intake_renderable.rb' unless defined? IntakeRenderable
-IntakeRenderer.patch_intake_classes
-# puts decision_review.render_intake
+# # https://github.com/department-of-veterans-affairs/caseflow/wiki/Intake-Structure-Renderer
+# require "./lib/helpers/intake_renderer.rb" unless defined? IntakeRenderer
+# require "./lib/helpers/intake_renderable.rb" unless defined? IntakeRenderable
+# IntakeRenderer.patch_intake_classes
+# # puts decision_review.render_intake
+
+# require "./lib/helpers/hearing_renderer.rb" unless defined? HearingRenderer
+# require "./lib/helpers/hearing_renderable.rb" unless defined? HearingRenderable
+# HearingRenderer.patch_hearing_classes
+# # puts appeal.render_hearing
+# # puts veteran.render_hearing
+# # puts HearingRenderer.render(obj)
 
 def p_request_issues(ris)
   quietly do
-    dis=ris.first.decision_review.decision_issues
+    dis = ris.first.decision_review.decision_issues
     puts "---- #{ris.count} RequestIssues with #{dis.count} DecisionIssues"
-    ris.order(:id).each_with_index{|ri,i|
+    ris.order(:id).each_with_index do |ri, i|
       p_request_issue(ri, i)
-    }.map(&:to_s)
+    end.map(&:to_s)
     dis
     puts "^^^^^^^^^^^^^^^^^^^^"
   end
 end
 
-def p_request_issue(r, i=0)
-  puts "#{i+1}. Request #{r.id}: #{[r.closed_status, r.contested_rating_issue_diagnostic_code, r.benefit_type, r.contested_issue_description].to_s}"
-  r.decision_issues.order(:id).each_with_index{|di,i2|
-    p_decision_issue(di,i2)
-  }
+def p_request_issue(r, i = 0)
+  puts "#{i + 1}. Request #{r.id}: #{[r.closed_status, r.contested_rating_issue_diagnostic_code, r.benefit_type, r.contested_issue_description]}"
+  r.decision_issues.order(:id).each_with_index do |di, i2|
+    p_decision_issue(di, i2)
+  end
 end
 
-def p_decision_issue(di, i=0)
+def p_decision_issue(di, _i = 0)
   puts "    * Decision #{di.id}: #{[di.disposition, di.diagnostic_code, di.caseflow_decision_date, di.description]}"
 end
 
-def p_request_issue_update(riu,i=0)
-  puts "#{i+1}. RequestIssueUpdate #{riu.id}: #{[riu.review_id, riu.before_request_issue_ids, riu.after_request_issue_ids, riu.processed_at].to_s}"
+def p_request_issue_update(riu, i = 0)
+  puts "#{i + 1}. RequestIssueUpdate #{riu.id}: #{[riu.review_id, riu.before_request_issue_ids, riu.after_request_issue_ids, riu.processed_at]}"
 end
 
 ## === ClaimReview ===============================
 
 def claim_review(id)
-  return [HigherLevelReview, SupplementalClaim].each{|clazz|
-    r=clazz.find_by(uuid: id)
-    return r if r
-  } if uuid?(id)
+  if uuid?(id)
+    return [HigherLevelReview, SupplementalClaim].each do |clazz|
+      r = clazz.find_by(uuid: id)
+      return r if r
+    end
+  end
 
   # if id is a claim ID
-  return [HigherLevelReview, SupplementalClaim].each{|clazz|
-    epe=EndProductEstablishment.find_by(reference_id: id, source_type: clazz.to_s)
+  [HigherLevelReview, SupplementalClaim].each do |clazz|
+    epe = EndProductEstablishment.find_by(reference_id: id, source_type: clazz.to_s)
     return epe.source if epe
-  }
+  end
 end
 
 def p_claim_review(cr)
@@ -523,15 +646,17 @@ end
 
 ## === SQL helpers ==============================
 
+#### Postgres
+# query = "SELECT 'ok' AS FIRST_COL, 'b' AS SEC_COL from APPEALS LIMIT 10"
 def exec_query(query, conn = ActiveRecord::Base.connection)
-  res=conn.exec_query(query)
-  puts res.rows.map{|r| r.map(&:inspect).join(',')}.join('\n')
-  res
+  res = conn.exec_query(query)
+  puts res.rows.map { |r| r.map(&:inspect).join(",") }.join('\n')
+  res.to_a
 end
 
-def sql_to_csv(raw_conn, sql)
+def sql_to_csv(query, raw_conn = ActiveRecord::Base.connection.raw_connection)
   output = []
-  raw_conn.copy_data("COPY (#{sql.chomp(';')}) TO STDOUT WITH (FORMAT CSV, HEADER TRUE);") do
+  raw_conn.copy_data("COPY (#{query.chomp(';')}) TO STDOUT WITH (FORMAT CSV, HEADER TRUE);") do
     while row = raw_conn.get_copy_data
       output << row
     end
@@ -539,11 +664,22 @@ def sql_to_csv(raw_conn, sql)
   output
 end
 
-def oracle_sql_to_csv(conn, sql)
-  output = []
+#### Oracle
+# sql = "SELECT 'ok' first_col, 'b' sec_col from BRIEFF where ROWNUM < 10"
+def oracle_sql_results(sql, conn = VACOLS::Case.connection)
   result = conn.execute(sql)
+  output = []
   while r = result.fetch_hash
-    output << r.values.join(',')
+    output << r
+  end
+  output
+end
+
+def oracle_sql_to_csv(sql, conn = VACOLS::Case.connection)
+  result = conn.execute(sql)
+  output = [result.column_metadata.map(&:name).join(",")]
+  while r = result.fetch_hash
+    output << r.values.join(",")
   end
   output
 end
@@ -551,11 +687,11 @@ end
 ## === Start Pry =================================
 
 # if $LOADED_FEATURES.grep(/pry/).empty?
-if not defined?(Pry)
+if !defined?(pry_instance)
   # puts "local_variables", local_variables
   # puts "global_variables", global_variables
   puts "Starting a Pry session"
-  require 'pry'
+  require "pry"
   configure_pry
   pry
 else

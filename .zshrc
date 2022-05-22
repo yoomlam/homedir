@@ -1,4 +1,3 @@
-
 # https://scriptingosx.com/2019/07/moving-to-zsh-part-5-completions/
 
 # Speed up zsh:
@@ -22,10 +21,13 @@ function echoTimer(){
 # startTimer
 
 # If you come from bash you might have to change your $PATH.
-export PATH=$HOME/bin:$PATH
 # put gnu-getopt first
 export PATH="/usr/local/opt/gnu-getopt/bin:$PATH"
 export PATH="/usr/local/opt/make/libexec/gnubin:$PATH"
+# python poetry
+export PATH="$HOME/.poetry/bin:$PATH"
+# my scripts take precendence
+export PATH="$HOME/bin:$PATH"
 
 # Path to your oh-my-zsh installation.
 export ZSH="$HOME/.oh-my-zsh"
@@ -34,8 +36,15 @@ export ZSH="$HOME/.oh-my-zsh"
 # load a random theme each time oh-my-zsh is loaded, in which case,
 # to know which specific one was loaded, run: echo $RANDOM_THEME
 # See https://github.com/ohmyzsh/ohmyzsh/wiki/Themes
-ZSH_THEME="myaussiegeek"
+# ZSH_THEME="myaussiegeek"
 # ZSH_THEME="avit"
+ZSH_THEME="powerlevel10k/powerlevel10k"
+# Enable Powerlevel10k instant prompt. Should stay close to the top of ~/.zshrc.
+# Initialization code that may require console input (password prompts, [y/n]
+# confirmations, etc.) must go above this block; everything else may go below.
+if [[ -r "${XDG_CACHE_HOME:-$HOME/.cache}/p10k-instant-prompt-${(%):-%n}.zsh" ]]; then
+  source "${XDG_CACHE_HOME:-$HOME/.cache}/p10k-instant-prompt-${(%):-%n}.zsh"
+fi
 
 # Set list of themes to pick from when loading at random
 # Setting this variable when ZSH_THEME=random will cause zsh to load
@@ -109,6 +118,17 @@ setopt HIST_IGNORE_ALL_DUPS     # older duplicate command is removed
 setopt HIST_IGNORE_DUPS         # ignore duplicates of the previous event
 setopt HIST_IGNORE_SPACE        # when the first character on the line is a space
 
+# hook function "Executed when a history line has been read interactively, but before it is executed."
+zshaddhistory() {
+    local line=${1%%$'\n'}
+    local cmd=${line%% *}
+    # Only those that satisfy all of the following conditions are added to the history
+    [[ ${#line} -ge 5
+       && ${cmd} != ll
+       && ${cmd} != l
+    ]]
+}
+zshaddhistory
 
 # http://zsh.sourceforge.net/Doc/Release/Options.html
 #setopt CORRECT    # shell will make a guess of what you meant to type and ask whether you want do
@@ -128,10 +148,28 @@ plugins=(
 	# git
 	sublime
 	#codeclimate
-	# zsh-syntax-highlighting
-	# slow: zsh-autosuggestions
-	# slow:	rbenv
+	zsh-syntax-highlighting
+	# slow:
+	zsh-autosuggestions
+	# slow:
+	rbenv
+	evalcache
+  # Unknown:
+  asdf
 )
+
+# This speeds up pasting w/ autosuggest
+# https://github.com/zsh-users/zsh-autosuggestions/issues/238#issuecomment-389324292
+pasteinit() {
+  OLD_SELF_INSERT=${${(s.:.)widgets[self-insert]}[2,3]}
+  zle -N self-insert url-quote-magic # I wonder if you'd need `.url-quote-magic`?
+}
+pastefinish() {
+  zle -N self-insert $OLD_SELF_INSERT
+}
+zstyle :bracketed-paste-magic paste-init pasteinit
+zstyle :bracketed-paste-magic paste-finish pastefinish
+
 echoTimer "Before oh-my-zsh.sh"
 
 source $ZSH/oh-my-zsh.sh
@@ -140,8 +178,11 @@ echoTimer "After oh-my-zsh.sh"
 # User configuration
 
 # https://superuser.com/questions/446594/separate-up-arrow-lookback-for-local-and-global-zsh-history
+# https://superuser.com/questions/714412/zsh-or-maybe-oh-my-zsh-history-gets-confused-with-multi-line-commands
 bindkey "OA" up-line-or-local-history
+bindkey "[A" up-line-or-local-history
 bindkey "OB" down-line-or-local-history
+bindkey "[B" down-line-or-local-history
 
 up-line-or-local-history() {
     zle set-local-history 1
@@ -212,8 +253,13 @@ echoTimer "TEMP and MY_TRASH"
 
 export CLICOLOR=1
 export BROWSER=open
-export EDITOR=subl
+export VISUAL="subl --wait"
+export EDITOR=vim
 export XIVIEWER=open
+export LESS="-F -X $LESS"
+
+# nnn
+export NNN_BMS='s:~/Desktop;d:~/Documents;D:~/Downloads/;a:~/DockApps;v:~/dev'
 
 # don't use pager for git grep
 # see ~/.gitconfig instead: export GIT_PAGER=''
@@ -221,10 +267,6 @@ export XIVIEWER=open
 alias dateStr='date +%Y-%m-%d-%T'
 source ~/.my_rc/bin/src/funcs.src
 
-alias l='ls -alFh'
-alias lt='ls -altrFh'
-alias du='du -kh'
-alias df='df -kh'
 #zsh uses the path variable # alias path='echo -e ${PATH//:/\\n}'
 alias sdkman='source "$HOME/.sdkman.src"'
 
@@ -250,14 +292,15 @@ sup(){
 	python3 ~/bin/clickup-export.py "$@" | pbcopy
 }
 
-java(){
-	echo "(lazy loading) Enabling SDKMAN"
-	sdkman
-	echo "(loaded)"
-	unset -f java
-	java -version
-	[ "$1" ] && java "$@"
-}
+# replaced with asdf-vm
+# java(){
+# 	echo "(lazy loading) Enabling SDKMAN"
+# 	sdkman
+# 	echo "(loaded)"
+# 	unset -f java
+# 	java -version
+# 	[ "$1" ] && java "$@"
+# }
 
 miniconda_(){
 	echo "(lazy loading) Enabling miniconda"
@@ -281,6 +324,11 @@ go_(){
 	echo "(loaded Go lang)"
 	unset -f go_
 	[ "$1" ] && go "$@"
+}
+nvm_(){
+  export NVM_DIR="$HOME/.nvm"
+  [ -s "$NVM_DIR/nvm.sh" ] && \. "$NVM_DIR/nvm.sh"  # This loads nvm
+  [ -s "$NVM_DIR/bash_completion" ] && \. "$NVM_DIR/bash_completion"  # This loads nvm bash_completion
 }
 
 # icu4c is keg-only, which means it was not symlinked into /usr/local,
@@ -327,3 +375,14 @@ heroku_(){
 echoTimer "Done zshrc"
 
 c
+
+# To customize prompt, run `p10k configure` or edit ~/.p10k.zsh.
+[[ ! -f ~/.p10k.zsh ]] || source ~/.p10k.zsh
+
+# https://gist.github.com/protosam/11800faea25a3f89af9ece4f11c72f1d#using-docker-cli
+# minikube status > /dev/null && eval $(minikube docker-env)
+
+# Instead of using the asdf zsh plugin
+# https://github.com/ohmyzsh/ohmyzsh/issues/10484#issuecomment-997545691
+unset ASDF_DIR
+source $(brew --prefix asdf)/libexec/asdf.sh

@@ -18,8 +18,8 @@ end
 cache.osxApperance = getOSXAppearance()
 
 module.getHighlightWindowColor = function()
-  local blueColor = { red = 50 / 255, green = 138 / 255, blue = 215 / 255, alpha = 1.0 }
-  local blueColor = { red = 0.8, green = 0, blue = 0.8, alpha = 1.0 }
+  -- local blueColor = { red = 50 / 255, green = 138 / 255, blue = 215 / 255, alpha = 1.0 }
+  local blueColor = { red = 0.8, green = 0, blue = 0.5, alpha = 1.0 }
   local grayColor = { red = 143 / 255, green = 143 / 255, blue = 143 / 255, alpha = 1.0 }
 
   return cache.osxApperance == 'graphite' and grayColor or blueColor
@@ -37,9 +37,9 @@ module.drawBorder = function()
   end
 
   local alpha       = 0.8
-  local borderWidth = 6
-  local distance    = 6
-  local roundRadius = 12
+  local borderWidth = 2
+  local distance    = 2
+  local roundRadius = 6
 
   local isFullScreen = focusedWindow:isFullScreen()
   local frame        = focusedWindow:frame()
