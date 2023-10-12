@@ -20,15 +20,6 @@ function echoTimer(){
 }
 # startTimer
 
-# If you come from bash you might have to change your $PATH.
-# put gnu-getopt first
-export PATH="/usr/local/opt/gnu-getopt/bin:$PATH"
-export PATH="/usr/local/opt/make/libexec/gnubin:$PATH"
-# python poetry
-export PATH="$HOME/.poetry/bin:$PATH"
-# my scripts take precendence
-export PATH="$HOME/bin:$PATH"
-
 # Path to your oh-my-zsh installation.
 export ZSH="$HOME/.oh-my-zsh"
 
@@ -123,8 +114,7 @@ zshaddhistory() {
     local line=${1%%$'\n'}
     local cmd=${line%% *}
     # Only those that satisfy all of the following conditions are added to the history
-    [[ ${#line} -ge 5
-       && ${cmd} != ll
+    [[ ${#line} -ge 3
        && ${cmd} != l
     ]]
 }
@@ -169,6 +159,10 @@ pastefinish() {
 }
 zstyle :bracketed-paste-magic paste-init pasteinit
 zstyle :bracketed-paste-magic paste-finish pastefinish
+
+# `C-x a` to expand an alias
+bindkey "^Xa" _expand_alias
+zstyle ':completion:*' completer _expand_alias _complete _ignored
 
 echoTimer "Before oh-my-zsh.sh"
 
@@ -283,7 +277,10 @@ echoTimer "aliases"
 # Reminder: kitty.conf: macos_option_as_alt left
 bindkey '\M-.' insert-last-word
 # See kitty.conf: bindkey '\C-.' insert-last-word
+# iTerm: https://gist.github.com/YumaInaura/27bb1f79881a63bed2fb9635cbaed73b
+bindkey ≥ insert-last-word
 
+# To create file: $(brew --prefix)/opt/fzf/install
 [ -f ~/.fzf.zsh ] && source ~/.fzf.zsh
 echoTimer "fzf"
 
@@ -386,3 +383,15 @@ c
 # https://github.com/ohmyzsh/ohmyzsh/issues/10484#issuecomment-997545691
 unset ASDF_DIR
 source $(brew --prefix asdf)/libexec/asdf.sh
+# TIP: `asdf reshim python` after a `pip install` https://til.hashrocket.com/posts/ques11vrjs-get-pip-installed-executables-into-the-asdf-path
+
+# If you come from bash you might have to change your $PATH.
+# put gnu-getopt first
+#export PATH="/usr/local/opt/gnu-getopt/bin:$PATH"
+#export PATH="/usr/local/opt/make/libexec/gnubin:$PATH"
+# python poetry
+#export PATH="$HOME/.poetry/bin:$PATH"
+# my scripts take precendence
+export PATH="$HOME/bin:$PATH"
+
+eval "$(direnv hook zsh)"

@@ -26,6 +26,7 @@ myUrlMapping:addUrlPatterns("com.google.Chrome", {
   "caseflowdemo.com",
 })
 myUrlMapping:addUrlPatterns("com.microsoft.edgemac", {
+  ".*%.sharepoint.com",".*%.office.com",".*%.outlook.com",
   "coderpad.io",
   "app.zenhub.com",
   "app.circleci.com",
@@ -39,10 +40,8 @@ myUrlMapping:addUrlPatterns("com.microsoft.edgemac", {
   "app.datadoghq.com",
   "hire.lever.co",
   "www.tms.va.gov",
-  "airtable.com",
   "amazonaws-us-gov.com",
-  ".*%.pagerduty%.com",
-  ".*%.newrelic%.com",
+  ".*%.paylocity.com",
   ".*%.va%.gov",
   "compute.internal",
   "app.retrium.com",
@@ -60,7 +59,12 @@ myUrlMapping:addUrlPatterns("com.microsoft.edgemac", {
   "verbose-broccoli-9868be41",
   "depo-platform-documentation.scrollhelp.site",
   "atlassian.net",
-  "scrollhelp.site"
+  "app.snyk.io",
+  "ghcr.io",
+  "scrollhelp.site",
+  "zoom.us",
+  "eden.io",
+  "microsoft.com"
 })
 -- myUrlMapping:addUrlPatterns("us.zoom.xos", { "zoom.us" })
 

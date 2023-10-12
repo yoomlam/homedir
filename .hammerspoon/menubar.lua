@@ -118,26 +118,26 @@ end
 hs.hotkey.bind(hyper, "7", nil, layoutCurrentScreen)
 
 -- Do not make layoutMenu `local` to avoid garbage collection
-layoutMenu = hs.menubar.new()
-layoutMenu:setTitle("L")
-layoutMenu:setMenu({
-  { title = "Layout" },
-  { indent = 1, title = "Based on current screen", fn = layoutCurrentScreen },
-  { indent = 1, title = "Tile windows", fn = tileWindows },
-  { title = "-" },
-	{ title = "Laptop screen layout" },
-	{ indent = 1, title = "Mail, Notes, Slack", fn = notesSlackMailLayout },
-	{ indent = 1, title = "Fork, Firefox, Safari", fn = forkFirefoxSafariLayout },
-	{ title = "Big screen layout" },
-	{ indent = 1, title = "RubyMine, iTerms", fn = rubymineTermsLayout },
-	{ indent = 1, title = "Zoom Huddle", fn = zoomHuddleLayout },
-	{ indent = 1, title = "Reading: Sublime, browsers, iTerm", fn = readingSublimeFirefoxSafariLayout },
-	{ title = "-" },
-	{ title = "Other examples", menu = {
-		{ title = "disabled item", disabled = true },
-		{ title = "checked item", checked = true },
-	}}
-})
+-- layoutMenu = hs.menubar.new()
+-- layoutMenu:setTitle("L")
+-- layoutMenu:setMenu({
+--   { title = "Layout" },
+--   { indent = 1, title = "Based on current screen", fn = layoutCurrentScreen },
+--   { indent = 1, title = "Tile windows", fn = tileWindows },
+--   { title = "-" },
+-- 	{ title = "Laptop screen layout" },
+-- 	{ indent = 1, title = "Mail, Notes, Slack", fn = notesSlackMailLayout },
+-- 	{ indent = 1, title = "Fork, Firefox, Safari", fn = forkFirefoxSafariLayout },
+-- 	{ title = "Big screen layout" },
+-- 	{ indent = 1, title = "RubyMine, iTerms", fn = rubymineTermsLayout },
+-- 	{ indent = 1, title = "Zoom Huddle", fn = zoomHuddleLayout },
+-- 	{ indent = 1, title = "Reading: Sublime, browsers, iTerm", fn = readingSublimeFirefoxSafariLayout },
+-- 	{ title = "-" },
+-- 	{ title = "Other examples", menu = {
+-- 		{ title = "disabled item", disabled = true },
+-- 		{ title = "checked item", checked = true },
+-- 	}}
+-- })
 
 
 
