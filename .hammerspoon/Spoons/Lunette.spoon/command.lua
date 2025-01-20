@@ -195,10 +195,13 @@ obj.rightHalf = function(windowFrame, screenFrame)
 
   if Validate:rightHalf(windowFrame, screenFrame) then
     newFrame = Resize:rightTwoThirds(windowFrame, screenFrame)
+    print("------ Lunette: A rightTwoThirds " .. newFrame.x .. " " .. newFrame.w)
   elseif Validate:rightTwoThirds(windowFrame, screenFrame) then
     newFrame = Resize:rightThird(windowFrame, screenFrame)
+    print("------ Lunette: B rightThird " .. newFrame.x .. " " .. newFrame.w)
   else
     newFrame = Resize:rightHalf(windowFrame, screenFrame)
+    print("------ Lunette: C rightHalf " .. newFrame.x .. " " .. newFrame.w)
   end
 
   return newFrame

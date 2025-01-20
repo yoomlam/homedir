@@ -175,11 +175,12 @@ end
 
 print("== Application key bindings:")
 -- hs.hotkey.bind(ctrlcmd, "i", function() apps:newWindow("iTerm") end)
-hs.hotkey.bind(ctrlcmd, "x", function() apps:cmdN("net.kovidgoyal.kitty", "/usr/local/bin/kitty -d=$HOME &") end)
-hs.hotkey.bind(ctrlcmdshift, "x", function() executeCommand("/usr/local/bin/kitty -d=$HOME &") end)
+-- hs.hotkey.bind(ctrlcmd, "x", function() apps:cmdN("net.kovidgoyal.kitty", "/usr/local/bin/kitty -d=$HOME &") end)
+-- hs.hotkey.bind(ctrlcmdshift, "x", function() executeCommand("/usr/local/bin/kitty -d=$HOME &") end)
+bindExecuteCommand(ctrlcmd, "x", "open -a Kitty")
 bindExecuteCommand(ctrlcmd, "p", "open -a Screenshot")
 -- bindExecuteCommand(ctrlcmd, "m", "open -a 'Mission Control'")
-bindExecuteCommand("alt-shift", "z", "pmset displaysleepnow")
+-- bindExecuteCommand("alt-shift", "z", "pmset displaysleepnow")
 -- hs.hotkey.bind(ctrlcmd, "s", )
 
 

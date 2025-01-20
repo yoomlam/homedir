@@ -142,10 +142,12 @@ plugins=(
 	# slow:
 	zsh-autosuggestions
 	# slow:
-	rbenv
+	# rbenv
 	evalcache
   # Unknown:
+  autoupdate
   asdf
+  # poetry
 )
 
 # This speeds up pasting w/ autosuggest
@@ -392,6 +394,77 @@ source $(brew --prefix asdf)/libexec/asdf.sh
 # python poetry
 #export PATH="$HOME/.poetry/bin:$PATH"
 # my scripts take precendence
-export PATH="$HOME/bin:$PATH"
+export PATH="$HOME/.local/bin:$HOME/bin:$PATH"
 
 eval "$(direnv hook zsh)"
+# Created by `pipx` on 2024-01-19 19:10:39
+export PATH="$PATH:/Users/yoom/.local/bin"
+
+# >>> conda initialize >>>
+# !! Contents within this block are managed by 'conda init' !!
+__conda_setup="$('/Users/yoom/anaconda3/bin/conda' 'shell.zsh' 'hook' 2> /dev/null)"
+if [ $? -eq 0 ]; then
+    eval "$__conda_setup"
+else
+    if [ -f "/Users/yoom/anaconda3/etc/profile.d/conda.sh" ]; then
+        . "/Users/yoom/anaconda3/etc/profile.d/conda.sh"
+    else
+        export PATH="/Users/yoom/anaconda3/bin:$PATH"
+    fi
+fi
+unset __conda_setup
+# <<< conda initialize <<<
+
+
+
+# JINA_CLI_BEGIN
+
+## autocomplete
+if [[ ! -o interactive ]]; then
+    return
+fi
+
+compctl -K _jina jina
+
+_jina() {
+  local words completions
+  read -cA words
+
+  if [ "${#words}" -eq 2 ]; then
+    completions="$(jina commands)"
+  else
+    completions="$(jina completions ${words[2,-2]})"
+  fi
+
+  reply=(${(ps:
+:)completions})
+}
+
+# session-wise fix
+ulimit -n 4096
+export OBJC_DISABLE_INITIALIZE_FORK_SAFETY=YES
+
+# JINA_CLI_END
+
+
+# pnpm
+export PNPM_HOME="/Users/yoom/Library/pnpm"
+case ":$PATH:" in
+  *":$PNPM_HOME:"*) ;;
+  *) export PATH="$PNPM_HOME:$PATH" ;;
+esac
+# pnpm end
+
+
+export NVM_DIR="$HOME/.nvm"
+[ -s "/opt/homebrew/opt/nvm/nvm.sh" ] && \. "/opt/homebrew/opt/nvm/nvm.sh"  # This loads nvm
+[ -s "/opt/homebrew/opt/nvm/etc/bash_completion.d/nvm" ] && \. "/opt/homebrew/opt/nvm/etc/bash_completion.d/nvm"  # This loads nvm bash_completion
+
+
+# Reminder from Homebrew
+# If you don't want/need a background service you can just run:
+#  /opt/homebrew/opt/postgresql@14/bin/postgres -D /opt/homebrew/var/postgresql@14
+
+. "$HOME/.atuin/bin/env"
+
+eval "$(atuin init zsh)"

@@ -19,12 +19,16 @@ end
 
 -- To find bundleId, open app's content and look for "bundleId" in a plist file
 
-myUrlMapping:addUrlPatterns("org.mozilla.firefox", {
+myUrlMapping:addUrlPatterns("com.apple.safari", {
+  ".*%.apple.com",
+  ".*%.roomsketcher.com"
 })
-myUrlMapping:addUrlPatterns("com.google.Chrome", {
-  "citrixaccess.va.gov",
-  "caseflowdemo.com",
-})
+-- myUrlMapping:addUrlPatterns("org.mozilla.firefox", {
+-- })
+-- myUrlMapping:addUrlPatterns("com.google.Chrome", {
+--   "citrixaccess.va.gov",
+--   "caseflowdemo.com",
+-- })
 myUrlMapping:addUrlPatterns("com.microsoft.edgemac", {
   ".*%.sharepoint.com",".*%.office.com",".*%.outlook.com",
   "coderpad.io",
@@ -79,7 +83,11 @@ myUrlMapping:addFuncForUrlPatterns(openFunc, { "hello" })
 local obj = {}
 
 function obj:start()
+  -- urlDispatcher.default_handler = "org.mozilla.firefox"
+
+  urlDispatcher.default_handler = "com.microsoft.edgemac"
   urlDispatcher.url_patterns = myUrlMapping
+
   urlDispatcher:start()
 end
 
